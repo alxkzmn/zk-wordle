@@ -23,13 +23,10 @@ node generate_witness.js wordle.wasm input.json witness.wtns
 Return to home dir
 
 ```
-cd ..
-cd ..
+cd ../..
 ```
 
-Conduct the powers of Tau ceremony:
-
-The initial part of the ceremony is not circuit-specific and you can reuse the generated files if needed.
+Conduct the powers of Tau ceremony. The initial part of the ceremony is not circuit-specific and you can reuse the generated files if needed.
 
 ```
 snarkjs powersoftau new bn128 12 pot12_0000.ptau -v
