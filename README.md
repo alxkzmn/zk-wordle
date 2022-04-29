@@ -5,8 +5,7 @@ Wordle game implemented using the Zero-Knowledge Proofs
 ## Compile the circuit
 
 ```
-cd circuits
-circom wordle.circom --r1cs --wasm --sym --c
+npm run compile
 ```
 
 ## Generate the witness

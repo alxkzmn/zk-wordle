@@ -1,0 +1,25 @@
+{
+  "name": "zk-wordle",
+  "version": "1.0.0",
+  "description": "Wordle game implemented using the Zero-Knowledge Proofs",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "circomlib": "^2.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "compile": "circom circuits/wordle.circom --r1cs --wasm --sym --c --output circuits/compiled && cd circuits && snarkjs zkey new compiled/wordle.r1cs powers-of-tau/powersOfTau28_hez_final_08.ptau compiled/wordle_0000.zkey"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alxkzmn/zk-wordle.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alxkzmn/zk-wordle/issues"
+  },
+  "homepage": "https://github.com/alxkzmn/zk-wordle#readme"
+}

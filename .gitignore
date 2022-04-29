@@ -1,7 +1,5 @@
 .DS_Store
 .vscode
 *.o
-circuits/wordle_cpp
-circuits/wordle_js
-circuits/*.json
+circuits/compiled/*
 node_modules
