@@ -2,10 +2,16 @@
 
 Wordle game implemented using the Zero-Knowledge Proofs
 
-## Compile the circuit
+## Compile the circuit and generate the reference zKey
 
 ```
 npm run compile
+```
+
+## Carry out phase 2 of the ceremony
+
+```
+npm run phase2
 ```
 
 ## Generate the witness
