@@ -39,6 +39,9 @@ import './App.css'
 import { AlertContainer } from './components/alerts/AlertContainer'
 import { useAlert } from './context/AlertContext'
 import { Navbar } from './components/navbar/Navbar'
+import { generateProof } from './zk/prove'
+import { asAsciiArray } from './lib/asAsciiArray'
+import { getGuessStatuses } from './lib/statuses'
 
 function App() {
   const prefersDarkMode = window.matchMedia(
@@ -222,7 +225,17 @@ function App() {
       !isGameWon
     ) {
       setGuesses([...guesses, currentGuess])
-      //TODO generate guess proof here!
+
+      generateProof(
+        asAsciiArray(currentGuess),
+        asAsciiArray(solution),
+        getGuessStatuses(currentGuess).map((status) =>
+          status === 'absent' ? 0 : status === 'correct' ? 1 : 0
+        ),
+        getGuessStatuses(currentGuess).map((status) =>
+          status === 'absent' ? 0 : status === 'present' ? 1 : 0
+        )
+      )
       setCurrentGuess('')
 
       if (winningWord) {
