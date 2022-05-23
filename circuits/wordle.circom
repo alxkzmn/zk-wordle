@@ -16,43 +16,32 @@ template ZKWordle () {
    }
 
    for (var i=0; i<5; i++) {
-      exact[i].in[0] <== guess[i];
-      exact[i].in[1] <== word[i];
+      exact[i].in[0] <-- guess[i];
+      exact[i].in[1] <-- word[i];
       // Constraint exact matches
       greens[i] === exact[i].out;
    }
 
    component nonExact[5][5];
-   component sums[5];
-   component gt[5];
    var k = 0;
    var j = 0;
+   var nonExactMatches[5] = [0,0,0,0,0];
+   component nonExactEq[5];
    for (j=0; j<5; j++) {
-      sums[j] = FiveSum();
       for (k=0; k<5; k++) {
-         nonExact[j][k] = IsEqual();
-         nonExact[j][k].in[0] <== guess[j];
-         nonExact[j][k].in[1] <== word[k];
-         if (j==k){
-            sums[j].in[k] <== 0;
-         } else {
-            sums[j].in[k] <== nonExact[j][k].out ;
+         if (j!=k && guess[j]==word[k]){
+           nonExactMatches[j] = 1;
+           //End the loop
+           k=5;
          }
       }
-      gt[j] = GreaterThan(3);
-      gt[j].in[0] <== sums[j].out;
-      gt[j].in[1] <== 1;
+      nonExactEq[j] = IsEqual();
+      nonExactEq[j].in[0] <-- 1;
+      nonExactEq[j].in[1] <-- nonExactMatches[j];
       // Constraint non-exact matches
-      yellows[j] === gt[j].out;
+      yellows[j] === nonExactEq[j].out;
    }
    
-}
-
-template FiveSum() {
-   signal input in[5];
-   signal output out;
-
-   out <== in[0]+in[1]+in[2]+in[3]+in[4];
 }
 
 component main{public [guess]} = ZKWordle();
