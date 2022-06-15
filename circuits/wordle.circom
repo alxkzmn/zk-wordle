@@ -4,9 +4,13 @@ include "../node_modules/circomlib/circuits/gates.circom";
 include "../node_modules/circomlib/circuits/pedersen.circom";
 
 template ZKWordle () {  
-
-   signal input word[5];
+   //"Word of the day", private input
+   signal input solution[5];
+   //Current guess (public input)
    signal input guess[5];
+   //Clue output (typically represented using colored squares ⬜🟩⬜🟨🟨)
+   //"0" - the letter is absent (gray), "1" - the letter matches correctly (green)
+   //"2" - the letter is present in solution but is located at a different position (yellow)
    signal output clue[5];
 
    signal correct[5];
@@ -14,7 +18,7 @@ template ZKWordle () {
    for (var i=0; i<5; i++) {
       eq[i] = IsEqual();
       eq[i].in[0] <== guess[i];
-      eq[i].in[1] <== word[i];
+      eq[i].in[1] <== solution[i];
       correct[i] <== eq[i].out;
    }
 
@@ -36,7 +40,7 @@ template ZKWordle () {
          //True if the i-th guess letter is the same as j-th solution letter.
          match[i][j] = IsEqual();
          match[i][j].in[0] <== guess[i];
-         match[i][j].in[1] <== word[j];
+         match[i][j].in[1] <== solution[j];
          //True if guess letter has a match but it didn't match with
          //solution letter exactly in this (i-th) position.
          //Let's call it an "elsewhere match".
@@ -97,6 +101,8 @@ template ZKWordle () {
    }
 }
 
+//Convenience component that inverts the "b" input 
+//and performs && of the result with the "a" input
 template AndNotB(){
    signal input a;
    signal input b;
@@ -114,6 +120,6 @@ template AndNotB(){
 component main{public [guess]} = ZKWordle();
 
 /* INPUT = {
-    "word": [100,101,101,100,103],
-    "guess": [101,100,105,101,101]
+    "solution":   [100,101,100,101,103],
+    "guess":      [101,100,105,101,101]
 } */
