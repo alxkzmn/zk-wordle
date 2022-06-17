@@ -11,11 +11,13 @@ import {
   NEW_WORD_TEXT,
   SHARE_TEXT,
 } from '../../constants/strings'
+import { CharStatus } from '../../lib/statuses'
 
 type Props = {
   isOpen: boolean
   handleClose: () => void
   guesses: string[]
+  statuses: Map<string, CharStatus[]>
   gameStats: GameStats
   isGameLost: boolean
   isGameWon: boolean
@@ -30,6 +32,7 @@ export const StatsModal = ({
   isOpen,
   handleClose,
   guesses,
+  statuses,
   gameStats,
   isGameLost,
   isGameWon,
@@ -80,6 +83,7 @@ export const StatsModal = ({
             onClick={() => {
               shareStatus(
                 guesses,
+                statuses,
                 isGameLost,
                 isHardMode,
                 isDarkMode,

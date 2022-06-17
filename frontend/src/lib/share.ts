@@ -1,4 +1,4 @@
-import { getGuessStatuses } from './statuses'
+import { CharStatus } from './statuses'
 import { solutionIndex, unicodeSplit } from './words'
 import { GAME_TITLE } from '../constants/strings'
 import { MAX_CHALLENGES } from '../constants/settings'
@@ -11,6 +11,7 @@ const device = parser.getDevice()
 
 export const shareStatus = (
   guesses: string[],
+  statuses: Map<string, CharStatus[]>,
   lost: boolean,
   isHardMode: boolean,
   isDarkMode: boolean,
@@ -21,7 +22,11 @@ export const shareStatus = (
     `${GAME_TITLE} ${solutionIndex} ${
       lost ? 'X' : guesses.length
     }/${MAX_CHALLENGES}${isHardMode ? '*' : ''}\n\n` +
-    generateEmojiGrid(guesses, getEmojiTiles(isDarkMode, isHighContrastMode))
+    generateEmojiGrid(
+      guesses,
+      statuses,
+      getEmojiTiles(isDarkMode, isHighContrastMode)
+    )
 
   const shareData = { text: textToShare }
 
@@ -42,15 +47,18 @@ export const shareStatus = (
   }
 }
 
-export const generateEmojiGrid = (guesses: string[], tiles: string[]) => {
+export const generateEmojiGrid = (
+  guesses: string[],
+  statuses: Map<string, CharStatus[]>,
+  tiles: string[]
+) => {
   return guesses
     .map((guess) => {
-      const status = getGuessStatuses(guess)
       const splitGuess = unicodeSplit(guess)
-
+      const status = statuses.get(guess)?.toString() ?? 'absent'
       return splitGuess
         .map((_, i) => {
-          switch (status[i]) {
+          switch (status) {
             case 'correct':
               return tiles[0]
             case 'present':

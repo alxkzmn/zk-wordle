@@ -39,9 +39,7 @@ import './App.css'
 import { AlertContainer } from './components/alerts/AlertContainer'
 import { useAlert } from './context/AlertContext'
 import { Navbar } from './components/navbar/Navbar'
-import { generateProof } from './zk/prove'
-import { asAsciiArray } from './lib/asAsciiArray'
-import { getGuessStatuses } from './lib/statuses'
+import { CharStatus, getGuessStatuses } from './lib/statuses'
 
 function App() {
   const prefersDarkMode = window.matchMedia(
@@ -84,6 +82,14 @@ function App() {
       })
     }
     return loaded.guesses
+  })
+
+  const [statuses, setStatuses] = useState<Map<string, CharStatus[]>>(() => {
+    const loaded = loadGameStateFromLocalStorage()
+    if (loaded?.solution !== solution) {
+      return new Map()
+    }
+    return loaded.statuses
   })
 
   const [stats, setStats] = useState(() => loadStats())
@@ -142,8 +148,8 @@ function App() {
   }
 
   useEffect(() => {
-    saveGameStateToLocalStorage({ guesses, solution })
-  }, [guesses])
+    saveGameStateToLocalStorage({ guesses, statuses, solution })
+  }, [guesses, statuses])
 
   useEffect(() => {
     if (isGameWon) {
@@ -180,7 +186,7 @@ function App() {
     )
   }
 
-  const onEnter = () => {
+  const onEnter = async () => {
     if (isGameWon || isGameLost) {
       return
     }
@@ -201,7 +207,11 @@ function App() {
 
     // enforce hard mode - all guesses must contain all previously revealed letters
     if (isHardMode) {
-      const firstMissingReveal = findFirstUnusedReveal(currentGuess, guesses)
+      const firstMissingReveal = await findFirstUnusedReveal(
+        currentGuess,
+        guesses,
+        statuses
+      )
       if (firstMissingReveal) {
         setCurrentRowClass('jiggle')
         return showErrorAlert(firstMissingReveal, {
@@ -213,9 +223,11 @@ function App() {
     setIsRevealing(true)
     // turn this back off after all
     // chars have been revealed
-    setTimeout(() => {
+    getGuessStatuses(currentGuess).then((status) => {
+      console.log(statuses)
+      setStatuses(new Map(statuses.set(currentGuess, status)))
       setIsRevealing(false)
-    }, REVEAL_TIME_MS * MAX_WORD_LENGTH)
+    })
 
     const winningWord = isWinningWord(currentGuess)
 
@@ -226,16 +238,6 @@ function App() {
     ) {
       setGuesses([...guesses, currentGuess])
 
-      generateProof(
-        asAsciiArray(currentGuess),
-        asAsciiArray(solution),
-        getGuessStatuses(currentGuess).map((status) =>
-          status === 'absent' ? 0 : status === 'correct' ? 1 : 0
-        ),
-        getGuessStatuses(currentGuess).map((status) =>
-          status === 'absent' ? 0 : status === 'present' ? 1 : 0
-        )
-      )
       setCurrentGuess('')
 
       if (winningWord) {
@@ -265,6 +267,7 @@ function App() {
         <div className="pb-6 grow">
           <Grid
             guesses={guesses}
+            statuses={statuses}
             currentGuess={currentGuess}
             isRevealing={isRevealing}
             currentRowClassName={currentRowClass}
@@ -285,6 +288,7 @@ function App() {
           isOpen={isStatsModalOpen}
           handleClose={() => setIsStatsModalOpen(false)}
           guesses={guesses}
+          statuses={statuses}
           gameStats={stats}
           isGameLost={isGameLost}
           isGameWon={isGameWon}

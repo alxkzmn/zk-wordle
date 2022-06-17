@@ -1,24 +1,31 @@
 const CIRCUIT_WASM_PATH = '/zk/wordle.wasm'
 const CIRCUIT_ZKEY_PATH = '/zk/wordle_final.zkey'
 
+export interface SnarkJSProof {
+  pi_a: [string, string, string]
+  pi_b: [[string, string], [string, string], [string, string]]
+  pi_c: [string, string, string]
+}
+
+export interface SnarkJSProofAndSignals {
+  proof: SnarkJSProof
+  publicSignals: number[]
+}
+
 export const generateProof = async (
   asciiGuess: number[],
-  asciiSolution: number[],
-  greens: number[],
-  yellows: number[]
-): Promise<void> => {
+  asciiSolution: number[]
+): Promise<number[]> => {
   console.log(`Guess: ${asciiGuess}`)
-  console.log(`Greens: ${greens}`)
-  console.log(`Yellows: ${yellows}`)
-  await window.snarkjs.groth16.fullProve(
+  let proof = (await window.snarkjs.groth16.fullProve(
     {
-      word: asciiSolution,
+      solution: asciiSolution,
       guess: asciiGuess,
-      greens: greens,
-      yellows: yellows,
     },
     CIRCUIT_WASM_PATH,
     CIRCUIT_ZKEY_PATH
-  )
-  console.log('Proven!')
+  )) as SnarkJSProofAndSignals
+  console.log(`Proof generated`)
+  console.log(proof)
+  return proof.publicSignals.slice(0, 5)
 }
