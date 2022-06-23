@@ -1,7 +1,8 @@
 pragma circom 2.0.3;
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/gates.circom";
-include "../node_modules/circomlib/circuits/pedersen.circom";
+include "../node_modules/circomlib/circuits/sha256/sha256.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
 
 template ZKWordle () {  
    //"Word of the day", private input
@@ -12,6 +13,8 @@ template ZKWordle () {
    //"0" - the letter is absent (gray), "1" - the letter matches correctly (green)
    //"2" - the letter is present in solution but is located at a different position (yellow)
    signal output clue[5];
+   //Solution hash to compare with the publicly committed one
+   signal output hash[256];
 
    signal correct[5];
    component eq[5];
@@ -98,7 +101,28 @@ template ZKWordle () {
       //"0" if the letter is absent, "1" if it's an exact match 
       //and "2" if it's present elsewhere in the solution.
       clue[i] <== correct[i] + present[i][4].out * 2;
-   }
+    }
+
+   //We need to represent solution as bits to later hash it.
+    component bitified[5];
+    for (var i=0; i<5; i++){
+        bitified[i] = Num2Bits(16); // Two ASCII bytes
+        bitified[i].in <== solution[i];
+    }
+    signal binarySolution[80];
+    for (i=0; i<5; i++){
+        for (j=0; j<16; j++){
+            binarySolution[16*i+j] <== bitified[i].out[j];
+        }
+    }
+    //Hashing the solution
+    component solutionHash = Sha256(80);
+    for (var i=0; i<80; i++) {
+        solutionHash.in[i] <== binarySolution[i];
+    }
+    for (var i=0; i<256; i++) {
+        hash [i] <== solutionHash.out[i];
+    }
 }
 
 //Convenience component that inverts the "b" input 
