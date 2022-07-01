@@ -6,7 +6,7 @@
     "test": "test"
   },
   "dependencies": {
-    "circomlib": "^2.0.3"
+    "circomlib": "^2.0.5"
   },
   "devDependencies": {},
   "scripts": {

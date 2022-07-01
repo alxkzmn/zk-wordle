@@ -1,7 +1,7 @@
 pragma circom 2.0.3;
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/gates.circom";
-include "../node_modules/circomlib/circuits/sha256/sha256.circom";
+include "../node_modules/circomlib/circuits/pedersen.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
 template ZKWordle () {  
@@ -14,7 +14,7 @@ template ZKWordle () {
    //"2" - the letter is present in solution but is located at a different position (yellow)
    signal output clue[5];
    //Solution hash to compare with the publicly committed one
-   signal output hash[256];
+   signal output hash;
 
    signal correct[5];
    component eq[5];
@@ -106,23 +106,22 @@ template ZKWordle () {
    //We need to represent solution as bits to later hash it.
     component bitified[5];
     for (var i=0; i<5; i++){
-        bitified[i] = Num2Bits(16); // Two ASCII bytes
+        bitified[i] = Num2Bits(8); // Converting each ASCII byte to bits
         bitified[i].in <== solution[i];
     }
-    signal binarySolution[80];
+    //Five bytes of 8 bits each, 40 in total.
+    signal binarySolution[40];
     for (i=0; i<5; i++){
-        for (j=0; j<16; j++){
-            binarySolution[16*i+j] <== bitified[i].out[j];
+        for (j=0; j<8; j++){
+            binarySolution[8*i+j] <== bitified[i].out[j];
         }
     }
     //Hashing the solution
-    component solutionHash = Sha256(80);
-    for (var i=0; i<80; i++) {
+    component solutionHash = Pedersen(40);
+    for (var i=0; i<40; i++) {
         solutionHash.in[i] <== binarySolution[i];
     }
-    for (var i=0; i<256; i++) {
-        hash [i] <== solutionHash.out[i];
-    }
+    hash<== solutionHash.out[0];
 }
 
 //Convenience component that inverts the "b" input 

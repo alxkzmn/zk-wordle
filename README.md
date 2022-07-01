@@ -8,6 +8,8 @@ Wordle game implemented using the Zero-Knowledge Proofs
 npm run compile
 ```
 
+Powers of Tau files are copied from here: https://github.com/iden3/snarkjs#7-prepare-phase-2
+
 ## Carry out phase 2 of the ceremony
 
 ```
