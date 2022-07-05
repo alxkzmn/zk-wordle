@@ -2,6 +2,8 @@ import { Service, MemoryServiceOptions } from "feathers-memory";
 import { Application } from "../../declarations";
 import { Params } from "@feathersjs/feathers";
 import { groth16 } from "snarkjs";
+import { solution } from "../../utils/words";
+import { asAsciiArray } from "../../utils/asAsciiArray";
 
 const CIRCUIT_WASM_PATH = "src/zk/wordle.wasm";
 const CIRCUIT_ZKEY_PATH = "src/zk/wordle_final.zkey";
@@ -30,10 +32,10 @@ export class Clue extends Service {
   async create(data: Guess, params?: Params) {
     const { guess } = data;
     console.log("Received guess:", guess);
-
+    console.log("Solution:", solution);
     let proof = (await groth16.fullProve(
       {
-        solution: [0, 1, 2, 3, 4],
+        solution: asAsciiArray(solution),
         guess: guess,
       },
       CIRCUIT_WASM_PATH,
