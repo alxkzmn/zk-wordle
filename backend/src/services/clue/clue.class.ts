@@ -4,6 +4,7 @@ import { Params } from "@feathersjs/feathers";
 import { groth16 } from "snarkjs";
 import { solution } from "../../utils/words";
 import { asAsciiArray } from "../../utils/asAsciiArray";
+import { buildPedersenHash } from "circomlibjs";
 
 const CIRCUIT_WASM_PATH = "src/zk/wordle.wasm";
 const CIRCUIT_ZKEY_PATH = "src/zk/wordle_final.zkey";
@@ -33,9 +34,10 @@ export class Clue extends Service {
     const { guess } = data;
     console.log("Received guess:", guess);
     console.log("Solution:", solution);
+    let asciiSolution = asAsciiArray(solution);
     let proof = (await groth16.fullProve(
       {
-        solution: asAsciiArray(solution),
+        solution: asciiSolution,
         guess: guess,
       },
       CIRCUIT_WASM_PATH,
@@ -43,6 +45,16 @@ export class Clue extends Service {
     )) as SnarkJSProofAndSignals;
     console.log(`Proof generated`);
     console.log(proof);
+
+    const pedersen = await buildPedersenHash();
+    let babyJub = pedersen.babyJub;
+    let F = babyJub.F;
+
+    let pedersenHasher = (data: Buffer) =>
+      F.toObject(babyJub.unpackPoint(pedersen.hash(data))[0]);
+    let buffer = Buffer.from(asciiSolution);
+    const hashed = pedersenHasher(buffer);
+    console.log("Hashed: " + hashed);
 
     let newData = {
       proof: proof.publicSignals.slice(0, 5),

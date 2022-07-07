@@ -3,10 +3,10 @@
     "target": "es2018",
     "module": "commonjs",
     "outDir": "./lib",
-    "rootDir": "./src",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "node"
   },
-  "include": ["src/**/*", "src/types/snarkjs.d.ts"],
+  "include": ["src"],
   "exclude": ["test"]
 }
