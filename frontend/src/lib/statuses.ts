@@ -1,31 +1,22 @@
 import { asAsciiArray } from './asAsciiArray'
-import { generateProof } from './../zk/prove'
-import { solution, unicodeSplit } from './words'
+import { requestProof } from './../zk/prove'
+import { unicodeSplit } from './words'
 
 export type CharStatus = 'absent' | 'present' | 'correct'
 
 export const getStatuses = (
-  guesses: string[]
+  guesses: string[],
+  statuses: Map<string, CharStatus[]>
 ): { [key: string]: CharStatus } => {
   const charObj: { [key: string]: CharStatus } = {}
-  const splitSolution = unicodeSplit(solution)
 
-  guesses.forEach((word) => {
-    unicodeSplit(word).forEach((letter, i) => {
-      if (!splitSolution.includes(letter)) {
-        // make status absent
-        return (charObj[letter] = 'absent')
-      }
-
-      if (letter === splitSolution[i]) {
-        //make status correct
-        return (charObj[letter] = 'correct')
-      }
-
-      if (charObj[letter] !== 'correct') {
-        //make status present
-        return (charObj[letter] = 'present')
-      }
+  guesses.forEach((guess) => {
+    let status = statuses.get(guess) ?? []
+    unicodeSplit(guess).forEach((letter, i) => {
+      if (status[i] == 'correct') charObj[letter] = 'correct'
+      if (!charObj[letter] && status[i] == 'present')
+        charObj[letter] = 'present'
+      if (!charObj[letter]) charObj[letter] = 'absent'
     })
   })
 
@@ -35,14 +26,13 @@ export const getStatuses = (
 export const getGuessStatuses = async (
   guess: string
 ): Promise<CharStatus[]> => {
-  return generateProof(asAsciiArray(guess), asAsciiArray(solution)).then(
-    (proof) =>
-      Array.from(
-        proof
-          .map((status) =>
-            status == 0 ? 'absent' : status == 1 ? 'correct' : 'present'
-          )
-          .values()
-      )
+  return requestProof(asAsciiArray(guess)).then((proof) =>
+    Array.from(
+      proof
+        .map((status) =>
+          status == 0 ? 'absent' : status == 1 ? 'correct' : 'present'
+        )
+        .values()
+    )
   )
 }

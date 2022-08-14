@@ -1,4 +1,4 @@
-import { getStatuses } from '../../lib/statuses'
+import { CharStatus, getStatuses } from '../../lib/statuses'
 import { Key } from './Key'
 import { useEffect } from 'react'
 import { ENTER_TEXT, DELETE_TEXT } from '../../constants/strings'
@@ -9,6 +9,7 @@ type Props = {
   onDelete: () => void
   onEnter: () => void
   guesses: string[]
+  statuses: Map<string, CharStatus[]>
   isRevealing?: boolean
 }
 
@@ -17,9 +18,10 @@ export const Keyboard = ({
   onDelete,
   onEnter,
   guesses,
+  statuses,
   isRevealing,
 }: Props) => {
-  const charStatuses = getStatuses(guesses)
+  const charStatuses = getStatuses(guesses, statuses)
 
   const onClick = (value: string) => {
     if (value === 'ENTER') {

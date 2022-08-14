@@ -60,3 +60,19 @@ snarkjs groth16 prove wordle_0001.zkey circuits/wordle_js/witness.wtns proof.jso
 ```
 snarkjs groth16 verify verification_key.json public.json proof.json
 ```
+
+## To run the backend
+
+```bash
+$> cd backend
+$> npm install
+$> npm start
+```
+
+## To run the frontend
+
+```bash
+$> cd frontend
+$> npm install
+$> npm run start
+```

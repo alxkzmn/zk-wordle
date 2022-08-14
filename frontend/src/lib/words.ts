@@ -1,18 +1,23 @@
-import { WORDS } from '../constants/wordlist'
 import { VALID_GUESSES } from '../constants/validGuesses'
 import { WRONG_SPOT_MESSAGE, NOT_CONTAINED_MESSAGE } from '../constants/strings'
 import { default as GraphemeSplitter } from 'grapheme-splitter'
 import { CharStatus } from './statuses'
 
-export const isWordInWordList = (word: string) => {
-  return (
-    WORDS.includes(localeAwareLowerCase(word)) ||
-    VALID_GUESSES.includes(localeAwareLowerCase(word))
-  )
+export const isValidGuess = (word: string) => {
+  return VALID_GUESSES.includes(localeAwareLowerCase(word))
 }
 
-export const isWinningWord = (word: string) => {
-  return solution === word
+export const isWinningWord = (
+  word: string,
+  statuses: Map<string, CharStatus[]>
+) => {
+  let isWinning = true
+  statuses.get(word)?.forEach((status) => {
+    if (status !== 'correct') {
+      isWinning = false
+    }
+  })
+  return isWinning
 }
 
 // build a set of previously revealed letters - present and correct
@@ -86,10 +91,9 @@ export const getWordOfDay = () => {
   const nextday = (index + 1) * msInDay + epochMs
 
   return {
-    solution: localeAwareUpperCase(WORDS[index % WORDS.length]),
     solutionIndex: index,
     tomorrow: nextday,
   }
 }
 
-export const { solution, solutionIndex, tomorrow } = getWordOfDay()
+export const { solutionIndex, tomorrow } = getWordOfDay()

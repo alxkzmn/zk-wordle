@@ -1,31 +1,28 @@
-const CIRCUIT_WASM_PATH = '/zk/wordle.wasm'
-const CIRCUIT_ZKEY_PATH = '/zk/wordle_final.zkey'
+import feathers from '@feathersjs/client'
+import rest from '@feathersjs/rest-client'
+import axios from 'axios'
 
-export interface SnarkJSProof {
-  pi_a: [string, string, string]
-  pi_b: [[string, string], [string, string], [string, string]]
-  pi_c: [string, string, string]
+interface Result {
+  proof: number[]
+  hash: number
 }
 
-export interface SnarkJSProofAndSignals {
-  proof: SnarkJSProof
-  publicSignals: number[]
-}
-
-export const generateProof = async (
-  asciiGuess: number[],
-  asciiSolution: number[]
-): Promise<number[]> => {
+export const requestProof = async (asciiGuess: number[]): Promise<number[]> => {
   console.log(`Guess: ${asciiGuess}`)
-  let proof = (await window.snarkjs.groth16.fullProve(
-    {
-      solution: asciiSolution,
-      guess: asciiGuess,
-    },
-    CIRCUIT_WASM_PATH,
-    CIRCUIT_ZKEY_PATH
-  )) as SnarkJSProofAndSignals
-  console.log(`Proof generated`)
-  console.log(proof)
-  return proof.publicSignals.slice(0, 5)
+
+  const feathersClient = feathers()
+  //TODO prepare for deployment
+  const restClient = rest('http://localhost:3030')
+
+  feathersClient.configure(restClient.axios(axios))
+
+  let result: Result
+  try {
+    result = await feathersClient.service('clue').create({ guess: asciiGuess })
+    console.log(result)
+  } catch (e) {
+    throw Error(e as any)
+  }
+
+  return result.proof
 }

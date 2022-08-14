@@ -21,7 +21,9 @@ export const Grid = ({
 }: Props) => {
   const empties =
     guesses.length < MAX_CHALLENGES - 1
-      ? Array.from(Array(MAX_CHALLENGES - 1 - guesses.length))
+      ? Array.from(
+          Array(MAX_CHALLENGES - (!isRevealing ? 1 : 0) - guesses.length)
+        )
       : []
 
   return (
@@ -34,7 +36,7 @@ export const Grid = ({
           isRevealing={isRevealing && guesses.length - 1 === i}
         />
       ))}
-      {guesses.length < MAX_CHALLENGES && (
+      {!isRevealing && guesses.length < MAX_CHALLENGES && (
         <CurrentRow guess={currentGuess} className={currentRowClassName} />
       )}
       {empties.map((_, i) => (

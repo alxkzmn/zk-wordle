@@ -4,6 +4,8 @@ import { Keyboard } from './components/keyboard/Keyboard'
 import { InfoModal } from './components/modals/InfoModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { SettingsModal } from './components/modals/SettingsModal'
+import { tomorrow } from './lib/words'
+
 import {
   WIN_MESSAGES,
   GAME_COPIED_MESSAGE,
@@ -20,9 +22,8 @@ import {
   WELCOME_INFO_MODAL_MS,
 } from './constants/settings'
 import {
-  isWordInWordList,
+  isValidGuess,
   isWinningWord,
-  solution,
   findFirstUnusedReveal,
   unicodeLength,
 } from './lib/words'
@@ -68,28 +69,19 @@ function App() {
   const [isRevealing, setIsRevealing] = useState(false)
   const [guesses, setGuesses] = useState<string[]>(() => {
     const loaded = loadGameStateFromLocalStorage()
-    if (loaded?.solution !== solution) {
+    if (!loaded?.guesses) {
       return []
-    }
-    const gameWasWon = loaded.guesses.includes(solution)
-    if (gameWasWon) {
-      setIsGameWon(true)
-    }
-    if (loaded.guesses.length === MAX_CHALLENGES && !gameWasWon) {
-      setIsGameLost(true)
-      showErrorAlert(CORRECT_WORD_MESSAGE(solution), {
-        persist: true,
-      })
     }
     return loaded.guesses
   })
 
   const [statuses, setStatuses] = useState<Map<string, CharStatus[]>>(() => {
     const loaded = loadGameStateFromLocalStorage()
-    if (loaded?.solution !== solution) {
+    //TODO: detect solution commitment change
+    if (!loaded || Date.now() > loaded.tomorrow) {
       return new Map()
     }
-    return loaded.statuses
+    return loaded!.statuses
   })
 
   const [stats, setStats] = useState(() => loadStats())
@@ -148,7 +140,7 @@ function App() {
   }
 
   useEffect(() => {
-    saveGameStateToLocalStorage({ guesses, statuses, solution })
+    saveGameStateToLocalStorage({ guesses, statuses, tomorrow })
   }, [guesses, statuses])
 
   useEffect(() => {
@@ -198,7 +190,7 @@ function App() {
       })
     }
 
-    if (!isWordInWordList(currentGuess)) {
+    if (!isValidGuess(currentGuess)) {
       setCurrentRowClass('jiggle')
       return showErrorAlert(WORD_NOT_FOUND_MESSAGE, {
         onClose: clearCurrentRowClass,
@@ -221,23 +213,34 @@ function App() {
     }
 
     setIsRevealing(true)
+    setGuesses([...guesses, currentGuess])
+
     // turn this back off after all
     // chars have been revealed
-    getGuessStatuses(currentGuess).then((status) => {
-      console.log(statuses)
-      setStatuses(new Map(statuses.set(currentGuess, status)))
-      setIsRevealing(false)
-    })
+    let status = await getGuessStatuses(currentGuess)
+    setStatuses(new Map(statuses.set(currentGuess, status)))
 
-    const winningWord = isWinningWord(currentGuess)
+    const gameWasWon = !status.includes('absent') && !status.includes('present')
+    if (gameWasWon) {
+      setIsGameWon(true)
+    }
+    if (guesses.length === MAX_CHALLENGES && !gameWasWon) {
+      setIsGameLost(true)
+      //TODO: get solution from backend
+      showErrorAlert(CORRECT_WORD_MESSAGE('solution'), {
+        persist: true,
+      })
+    }
+
+    setIsRevealing(false)
+
+    const winningWord = isWinningWord(currentGuess, statuses)
 
     if (
       unicodeLength(currentGuess) === MAX_WORD_LENGTH &&
       guesses.length < MAX_CHALLENGES &&
       !isGameWon
     ) {
-      setGuesses([...guesses, currentGuess])
-
       setCurrentGuess('')
 
       if (winningWord) {
@@ -248,7 +251,8 @@ function App() {
       if (guesses.length === MAX_CHALLENGES - 1) {
         setStats(addStatsForCompletedGame(stats, guesses.length + 1))
         setIsGameLost(true)
-        showErrorAlert(CORRECT_WORD_MESSAGE(solution), {
+        //TODO: get solution from backend
+        showErrorAlert(CORRECT_WORD_MESSAGE('solution'), {
           persist: true,
           delayMs: REVEAL_TIME_MS * MAX_WORD_LENGTH + 1,
         })
@@ -278,6 +282,7 @@ function App() {
           onDelete={onDelete}
           onEnter={onEnter}
           guesses={guesses}
+          statuses={statuses}
           isRevealing={isRevealing}
         />
         <InfoModal
