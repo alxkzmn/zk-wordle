@@ -10,8 +10,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "compile": "circom circuits/wordle.circom --r1cs --wasm --sym --c --output circuits/compiled && cd circuits && snarkjs groth16 setup compiled/wordle.r1cs powers-of-tau/powersOfTau28_hez_final_15.ptau compiled/wordle_0000.zkey",
-    "phase2": "cd circuits/compiled && snarkjs zkey contribute wordle_0000.zkey wordle_final.zkey --name='1st Contributor Name' -v && snarkjs zkey export verificationkey wordle_final.zkey wordle_verification_key.json"
+    "compile": ". circuits/scripts/compile-circuit.sh"
   },
   "repository": {
     "type": "git",

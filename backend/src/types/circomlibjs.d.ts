@@ -1,3 +1,3 @@
 declare module "circomlibjs" {
-  export function buildPedersenHash(): Promise<any>;
+  export function buildPoseidon(): Promise<any>;
 }

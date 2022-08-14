@@ -1,10 +1,11 @@
 import { Service, MemoryServiceOptions } from "feathers-memory";
 import { Application } from "../../declarations";
 import { Params } from "@feathersjs/feathers";
-import { groth16 } from "snarkjs";
+import { plonk } from "snarkjs";
 import { solution } from "../../utils/words";
 import { asAsciiArray } from "../../utils/asAsciiArray";
-import { buildPedersenHash } from "circomlibjs";
+import { buildPoseidon } from "circomlibjs";
+import { BigNumber } from "ethers";
 
 const CIRCUIT_WASM_PATH = "src/zk/wordle.wasm";
 const CIRCUIT_ZKEY_PATH = "src/zk/wordle_final.zkey";
@@ -35,9 +36,11 @@ export class Clue extends Service {
     console.log("Received guess:", guess);
     console.log("Solution:", solution);
     let asciiSolution = asAsciiArray(solution);
-    let proof = (await groth16.fullProve(
+    let salt = Math.random() * 1e17;
+    let proof = (await plonk.fullProve(
       {
         solution: asciiSolution,
+        salt: salt,
         guess: guess,
       },
       CIRCUIT_WASM_PATH,
@@ -46,14 +49,14 @@ export class Clue extends Service {
     console.log(`Proof generated`);
     console.log(proof);
 
-    const pedersen = await buildPedersenHash();
-    let babyJub = pedersen.babyJub;
-    let F = babyJub.F;
-
-    let pedersenHasher = (data: Buffer) =>
-      F.toObject(babyJub.unpackPoint(pedersen.hash(data))[0]);
-    let buffer = Buffer.from(asciiSolution);
-    const hashed = pedersenHasher(buffer);
+    let poseidon = await buildPoseidon();
+    let solutionAsNum = 0;
+    for (let i = 0; i < asciiSolution.length; i++) {
+      solutionAsNum += asciiSolution[i] * Math.pow(100, i);
+    }
+    const hashed = BigNumber.from(
+      poseidon.F.toObject(poseidon([solutionAsNum, salt]))
+    );
     console.log("Hashed: " + hashed);
 
     let newData = {

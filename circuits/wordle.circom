@@ -1,12 +1,12 @@
 pragma circom 2.0.3;
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/gates.circom";
-include "../node_modules/circomlib/circuits/pedersen.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
+include "../node_modules/circomlib/circuits/poseidon.circom";
 
 template ZKWordle () {  
    //"Word of the day", private input
    signal input solution[5];
+   signal input salt;
    //Current guess (public input)
    signal input guess[5];
    //Clue output (typically represented using colored squares ⬜🟩⬜🟨🟨)
@@ -101,27 +101,19 @@ template ZKWordle () {
       //"0" if the letter is absent, "1" if it's an exact match 
       //and "2" if it's present elsewhere in the solution.
       clue[i] <== correct[i] + present[i][4].out * 2;
-    }
+   }
 
-   //We need to represent solution as bits to later hash it.
-    component bitified[5];
-    for (var i=0; i<5; i++){
-        bitified[i] = Num2Bits(8); // Converting each ASCII byte to bits
-        bitified[i].in <== solution[i];
-    }
-    //Five bytes of 8 bits each, 40 in total.
-    signal binarySolution[40];
-    for (i=0; i<5; i++){
-        for (j=0; j<8; j++){
-            binarySolution[8*i+j] <== bitified[i].out[j];
-        }
-    }
-    //Hashing the solution
-    component solutionHash = Pedersen(40);
-    for (var i=0; i<40; i++) {
-        solutionHash.in[i] <== binarySolution[i];
-    }
-    hash<== solutionHash.out[0];
+   //Converting the ASCII solution to a single number 
+   signal solutionAsNumber[5];
+   solutionAsNumber[0] <== solution[0];
+   for (i=1; i<5; i++){
+      solutionAsNumber[i] <== solutionAsNumber[i-1] + solution[i] * (100 ** i);
+   }
+   //Hashing the solution
+   component solutionHash = Poseidon(2);
+   solutionHash.inputs[0] <== solutionAsNumber[4];
+   solutionHash.inputs[1] <== salt;
+   hash <== solutionHash.out;
 }
 
 //Convenience component that inverts the "b" input 
@@ -144,5 +136,6 @@ component main{public [guess]} = ZKWordle();
 
 /* INPUT = {
     "solution":   [100,101,100,101,103],
+    "salt":       12345,
     "guess":      [101,100,105,101,101]
 } */
