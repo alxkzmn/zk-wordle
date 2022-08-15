@@ -3,3 +3,5 @@
 *.o
 circuits/compiled/*
 node_modules
+blockchain/cache
+blockchain/out

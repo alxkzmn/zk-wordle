@@ -24,6 +24,6 @@ cd compiled
 snarkjs zkey export verificationkey wordle_final.zkey wordle_verification_key.json
 
 # generate solidity contract
-snarkjs zkey export solidityverifier wordle_final.zkey ./../contracts/verifier.sol
+snarkjs zkey export solidityverifier wordle_final.zkey ./../../blockchain/src/verifier.sol
 
 cd ..
