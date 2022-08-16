@@ -1,3 +1,4 @@
+.env
 .DS_Store
 .vscode
 *.o
@@ -5,3 +6,4 @@ circuits/compiled/*
 node_modules
 blockchain/cache
 blockchain/out
+blockchain/broadcast
