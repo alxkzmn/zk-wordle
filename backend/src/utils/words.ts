@@ -14,8 +14,9 @@ export const getWordOfDay = () => {
   const index = Math.floor((now - epochMs) / msInDay);
 
   return {
+    solutionIndex: index,
     solution: localeAwareUpperCase(WORDS[index % WORDS.length]),
   };
 };
 
-export const { solution } = getWordOfDay();
+export const { solution, solutionIndex } = getWordOfDay();

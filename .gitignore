@@ -7,3 +7,4 @@ node_modules
 blockchain/cache
 blockchain/out
 blockchain/broadcast
+backend/src/blockchain_cache
