@@ -1,3 +1,6 @@
 [submodule "blockchain/lib/forge-std"]
 	path = blockchain/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "blockchain/lib/openzeppelin-contracts"]
+	path = blockchain/lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
