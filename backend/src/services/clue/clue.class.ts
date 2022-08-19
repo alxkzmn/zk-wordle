@@ -74,6 +74,7 @@ export class Clue extends Service {
       this.randomSalt = Math.random() * 1e18;
 
       let poseidon = await buildPoseidon();
+      //Converting solution to a single number in the same way as the circuit does.
       let solutionAsNum = 0;
       for (let i = 0; i < asciiSolution.length; i++) {
         solutionAsNum += asciiSolution[i] * Math.pow(100, i);
@@ -87,16 +88,23 @@ export class Clue extends Service {
         hashed
       );
       const receipt = await tx.wait();
-      console.log(receipt);
+      console.log(
+        receipt.status ? "Commitment created" : "Could not create commitment"
+      );
+      solutionCommitment = hashed;
     } else {
       console.log("Solution commitment found: ", solutionCommitment.toString());
     }
+
+    const args = {
+      solution: asciiSolution,
+      salt: this.randomSalt,
+      guess: guess,
+      hash: solutionCommitment.toString(),
+    };
+    console.log("Args:", args);
     let proof = await plonk.fullProve(
-      {
-        solution: asciiSolution,
-        salt: this.randomSalt,
-        guess: guess,
-      },
+      args,
       CIRCUIT_WASM_PATH,
       CIRCUIT_ZKEY_PATH
     );
@@ -105,7 +113,6 @@ export class Clue extends Service {
 
     let response = {
       proof: proof.publicSignals.slice(0, 5),
-      hash: proof.publicSignals[5],
     };
     return super.create(response, params);
   }

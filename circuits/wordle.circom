@@ -9,13 +9,13 @@ template ZKWordle () {
    signal input salt;
    //Current guess (public input)
    signal input guess[5];
+   //Solution hash
+   signal input hash;
    //Clue output (typically represented using colored squares ⬜🟩⬜🟨🟨)
    //"0" - the letter is absent (gray), "1" - the letter matches correctly (green)
    //"2" - the letter is present in solution but is located at a different position (yellow)
    signal output clue[5];
-   //Solution hash to compare with the publicly committed one
-   signal output hash;
-
+   
    signal correct[5];
    component eq[5];
    for (var i=0; i<5; i++) {
@@ -103,7 +103,13 @@ template ZKWordle () {
       clue[i] <== correct[i] + present[i][4].out * 2;
    }
 
-   //Converting the ASCII solution to a single number 
+   /*
+   * Converting the ASCII solution to a single number.
+   * Alternatively, we could make a Poseidon hasher with 6 inputs,
+   * but it would almost double the circuit constraint number.
+   * We are confident that none of the chars has a code above 99,
+   * so we can safely "stick" them together as two-digit decimals.
+   */
    signal solutionAsNumber[5];
    solutionAsNumber[0] <== solution[0];
    for (i=1; i<5; i++){
@@ -113,7 +119,8 @@ template ZKWordle () {
    component solutionHash = Poseidon(2);
    solutionHash.inputs[0] <== solutionAsNumber[4];
    solutionHash.inputs[1] <== salt;
-   hash <== solutionHash.out;
+   //Constrain the hash to a publicly committed one
+   hash === solutionHash.out;
 }
 
 //Convenience component that inverts the "b" input 
@@ -132,7 +139,7 @@ template AndNotB(){
    out <== and.out;
 }
 
-component main{public [guess]} = ZKWordle();
+component main{public [guess, hash]} = ZKWordle();
 
 /* INPUT = {
     "solution":   [100,101,100,101,103],
