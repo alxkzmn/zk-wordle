@@ -2,13 +2,13 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/verifier.sol";
+import "../src/check_guess.sol";
 
 contract VerifierTest is Test {
-    PlonkVerifier public verifier;
+    GuessVerifier public verifier;
 
     function setUp() public {
-        verifier = new PlonkVerifier();
+        verifier = new GuessVerifier();
         //verifier.setNumber(0);
     }
 

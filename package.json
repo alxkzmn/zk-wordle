@@ -10,7 +10,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "compile": ". circuits/scripts/compile-circuit.sh"
+    "compile": ". circuits/scripts/compile-circuit.sh && node ./circuits/scripts/rename-verifiers.js"
   },
   "repository": {
     "type": "git",

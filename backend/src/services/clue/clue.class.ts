@@ -10,8 +10,8 @@ import { ethers } from "ethers";
 import latestTestnetDeployment from "../../blockchain_cache/ZKWordle.s.sol/31337/run-latest.json";
 import contractAbi from "../../blockchain_cache/ZKWordle.sol/ZKWordle.json";
 
-const CIRCUIT_WASM_PATH = "src/zk/wordle.wasm";
-const CIRCUIT_ZKEY_PATH = "src/zk/wordle_final.zkey";
+const CIRCUIT_WASM_PATH = "src/zk/check_guess.wasm";
+const CIRCUIT_ZKEY_PATH = "src/zk/check_guess_final.zkey";
 
 interface Guess {
   guess: number[];
@@ -45,8 +45,9 @@ export class Clue extends Service {
         options.blockchainOptions.minterPrivateKey ?? "",
         options.blockchainOptions.provider
       );
+      //The 0th is GuessVerifier, the 1st is StatsVerifier, and the encapsulating ZKWordle is the 2nd one
       let contractDeploymenTransaction =
-        latestTestnetDeployment.transactions[0];
+        latestTestnetDeployment.transactions[2];
       this.zkWordleContract = new ethers.Contract(
         contractDeploymenTransaction.contractAddress,
         contractAbi.abi,
