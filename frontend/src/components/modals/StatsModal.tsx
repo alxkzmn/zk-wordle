@@ -12,6 +12,13 @@ import {
   SHARE_TEXT,
 } from '../../constants/strings'
 import { CharStatus } from '../../lib/statuses'
+import LoadingSpinner from '../progress/Spinner'
+import { useState } from 'react'
+import feathers, { rest } from '@feathersjs/client'
+import axios from 'axios'
+import { MAX_CHALLENGES } from '../../constants/settings'
+import { asAsciiArray } from '../../lib/asAsciiArray'
+import { PlonkProof } from '../../zk/prove'
 
 type Props = {
   isOpen: boolean
@@ -28,6 +35,12 @@ type Props = {
   numberOfGuessesMade: number
 }
 
+const feathersClient = feathers()
+//TODO prepare for deployment
+const restClient = rest('http://localhost:3030')
+
+feathersClient.configure(restClient.axios(axios))
+
 export const StatsModal = ({
   isOpen,
   handleClose,
@@ -42,6 +55,8 @@ export const StatsModal = ({
   isHighContrastMode,
   numberOfGuessesMade,
 }: Props) => {
+  const [isProving, setIsProving] = useState(false)
+
   if (gameStats.totalGames <= 0) {
     return (
       <BaseModal
@@ -77,23 +92,46 @@ export const StatsModal = ({
               daysInHours={true}
             />
           </div>
-          <button
-            type="button"
-            className="mt-2 w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-            onClick={() => {
-              shareStatus(
-                guesses,
-                statuses,
-                isGameLost,
-                isHardMode,
-                isDarkMode,
-                isHighContrastMode,
-                handleShareToClipboard
-              )
-            }}
-          >
-            {SHARE_TEXT}
-          </button>
+          {!isProving && (
+            <button
+              type="button"
+              className="mt-2 w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+              onClick={() => {
+                setIsProving(true)
+
+                while (guesses.length < MAX_CHALLENGES) {
+                  //Adding empty guesses after the last one to satisfy the 6x5 dimensions of the proof input
+                  guesses.push('     ')
+                }
+                let asciiGuesses = guesses.map((guess) => asAsciiArray(guess))
+                try {
+                  feathersClient
+                    .service('stats')
+                    .create({
+                      guesses: asciiGuesses,
+                    })
+                    .then((result: PlonkProof) => {
+                      console.log(result)
+                      setIsProving(false)
+                      shareStatus(
+                        guesses,
+                        statuses,
+                        isGameLost,
+                        isHardMode,
+                        isDarkMode,
+                        isHighContrastMode,
+                        handleShareToClipboard
+                      )
+                    })
+                } catch (e) {
+                  throw Error(e as any)
+                }
+              }}
+            >
+              {SHARE_TEXT}
+            </button>
+          )}
+          {isProving && <LoadingSpinner />}
         </div>
       )}
     </BaseModal>

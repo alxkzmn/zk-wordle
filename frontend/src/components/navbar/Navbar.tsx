@@ -4,6 +4,7 @@ import {
   InformationCircleIcon,
 } from '@heroicons/react/outline'
 import { GAME_TITLE } from '../../constants/strings'
+import { Profile } from '../profile/Profile'
 
 type Props = {
   setIsInfoModalOpen: (value: boolean) => void
@@ -33,6 +34,7 @@ export const Navbar = ({
             className="h-6 w-6 cursor-pointer dark:stroke-white"
             onClick={() => setIsSettingsModalOpen(true)}
           />
+          <Profile />
         </div>
       </div>
       <hr></hr>

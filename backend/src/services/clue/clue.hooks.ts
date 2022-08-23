@@ -1,33 +1,37 @@
-import { HooksObject } from '@feathersjs/feathers';
+import { Application, HooksObject } from "@feathersjs/feathers";
 
-export default {
-  before: {
-    all: [],
-    find: [],
-    get: [],
-    create: [],
-    update: [],
-    patch: [],
-    remove: []
-  },
+import connectToContract from "../../hooks/connect-to-contract";
 
-  after: {
-    all: [],
-    find: [],
-    get: [],
-    create: [],
-    update: [],
-    patch: [],
-    remove: []
-  },
+export default (app: Application): Partial<HooksObject> => {
+  return {
+    before: {
+      all: [],
+      find: [],
+      get: [],
+      create: [connectToContract(app)],
+      update: [],
+      patch: [],
+      remove: [],
+    },
 
-  error: {
-    all: [],
-    find: [],
-    get: [],
-    create: [],
-    update: [],
-    patch: [],
-    remove: []
-  }
+    after: {
+      all: [],
+      find: [],
+      get: [],
+      create: [],
+      update: [],
+      patch: [],
+      remove: [],
+    },
+
+    error: {
+      all: [],
+      find: [],
+      get: [],
+      create: [],
+      update: [],
+      patch: [],
+      remove: [],
+    },
+  };
 };

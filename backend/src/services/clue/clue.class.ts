@@ -6,9 +6,6 @@ import { solution, solutionIndex } from "../../utils/words";
 import { asAsciiArray } from "../../utils/asAsciiArray";
 import { buildPoseidon } from "circomlibjs";
 import { BigNumber } from "ethers";
-import { ethers } from "ethers";
-import latestTestnetDeployment from "../../blockchain_cache/ZKWordle.s.sol/31337/run-latest.json";
-import contractAbi from "../../blockchain_cache/ZKWordle.sol/ZKWordle.json";
 
 const CIRCUIT_WASM_PATH = "src/zk/check_guess.wasm";
 const CIRCUIT_ZKEY_PATH = "src/zk/check_guess_final.zkey";
@@ -17,43 +14,13 @@ interface Guess {
   guess: number[];
 }
 
-export interface BlockchainOptions {
-  provider: ethers.providers.Provider;
-  minterPrivateKey: string;
-  chainId: string;
-}
-
-export interface ClueServiceOptions extends MemoryServiceOptions {
-  blockchainOptions: BlockchainOptions;
-}
-
 export class Clue extends Service {
-  wallet: ethers.Wallet | undefined;
-  zkWordleContract: ethers.Contract | undefined;
-  private randomSalt: number | undefined;
-
+  private app: Application;
+  private salt: number | undefined;
   //eslint-disable-next-line @typescript-eslint/no-unused-vars
-  constructor(options: Partial<ClueServiceOptions>, app: Application) {
+  constructor(options: Partial<MemoryServiceOptions>, app: Application) {
     super(options);
-    this.randomSalt = Math.random() * 1e18;
-    if (!options?.blockchainOptions?.minterPrivateKey) {
-      throw new Error("Private key cannot be empty");
-    } else if (!options.blockchainOptions.chainId) {
-      throw new Error("chainId cannot be empty");
-    } else {
-      this.wallet = new ethers.Wallet(
-        options.blockchainOptions.minterPrivateKey ?? "",
-        options.blockchainOptions.provider
-      );
-      //The 0th is GuessVerifier, the 1st is StatsVerifier, and the encapsulating ZKWordle is the 2nd one
-      let contractDeploymenTransaction =
-        latestTestnetDeployment.transactions[2];
-      this.zkWordleContract = new ethers.Contract(
-        contractDeploymenTransaction.contractAddress,
-        contractAbi.abi,
-        this.wallet
-      );
-    }
+    this.app = app;
   }
 
   async create(data: Guess, params?: Params) {
@@ -64,7 +31,7 @@ export class Clue extends Service {
 
     //Poseidon hash is a BigInt
     let solutionCommitment = BigNumber.from(
-      await this.zkWordleContract!.solutionCommitment(solutionIndex)
+      await params?.zkWordleContract?.solutionCommitment(solutionIndex)
     );
     let asciiSolution = asAsciiArray(solution);
     //If the mapping in a smart contract returns zero, it means that either the day has changed and the solution index is different,
@@ -72,7 +39,11 @@ export class Clue extends Service {
     if (solutionCommitment.isZero()) {
       console.log("Solution commitment not found, creating...");
       //Creating new salt for the new solution
-      this.randomSalt = Math.random() * 1e18;
+      this.salt = (
+        await this.app
+          .service("salt")
+          .create({ solutionIndex: solutionIndex }, {})
+      ).salt;
 
       let poseidon = await buildPoseidon();
       //Converting solution to a single number in the same way as the circuit does.
@@ -81,10 +52,10 @@ export class Clue extends Service {
         solutionAsNum += asciiSolution[i] * Math.pow(100, i);
       }
       const hashed = BigNumber.from(
-        poseidon.F.toObject(poseidon([solutionAsNum, this.randomSalt]))
+        poseidon.F.toObject(poseidon([solutionAsNum, this.salt]))
       );
       console.log("Commitment: " + hashed);
-      const tx = await this.zkWordleContract!.commitSolution(
+      const tx = await params?.zkWordleContract?.commitSolution(
         solutionIndex,
         hashed
       );
@@ -95,11 +66,12 @@ export class Clue extends Service {
       solutionCommitment = hashed;
     } else {
       console.log("Solution commitment found: ", solutionCommitment.toString());
+      this.salt = (await this.app.service("salt").get(solutionIndex, {})).salt;
     }
 
     const args = {
       solution: asciiSolution,
-      salt: this.randomSalt,
+      salt: this.salt,
       guess: guess,
       hash: solutionCommitment.toString(),
     };
@@ -112,9 +84,6 @@ export class Clue extends Service {
     console.log(`Proof generated`);
     console.log(proof);
 
-    let response = {
-      proof: proof.publicSignals.slice(0, 5),
-    };
-    return super.create(response, params);
+    return super.create(proof, params);
   }
 }
