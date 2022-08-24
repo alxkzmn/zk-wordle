@@ -1,3 +1,4 @@
+import { PlonkProof } from './../../../backend/src/utils/proof'
 import { CharStatus } from './statuses'
 import { solutionIndex, unicodeSplit } from './words'
 import { GAME_TITLE } from '../constants/strings'
@@ -10,6 +11,7 @@ const browser = parser.getBrowser()
 const device = parser.getDevice()
 
 export const shareStatus = (
+  proof: PlonkProof,
   guesses: string[],
   statuses: Map<string, CharStatus[]>,
   lost: boolean,
@@ -26,7 +28,9 @@ export const shareStatus = (
       guesses,
       statuses,
       getEmojiTiles(isDarkMode, isHighContrastMode)
-    )
+    ) +
+    '\n' +
+    JSON.stringify(proof)
 
   const shareData = { text: textToShare }
 

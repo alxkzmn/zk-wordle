@@ -114,6 +114,7 @@ export const StatsModal = ({
                       console.log(result)
                       setIsProving(false)
                       shareStatus(
+                        result,
                         guesses,
                         statuses,
                         isGameLost,

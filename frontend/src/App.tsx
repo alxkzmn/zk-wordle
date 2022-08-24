@@ -76,7 +76,7 @@ function App() {
   const [isRevealing, setIsRevealing] = useState(false)
   const [guesses, setGuesses] = useState<string[]>(() => {
     const loaded = loadGameStateFromLocalStorage()
-    if (!loaded?.guesses) {
+    if (!loaded?.guesses || !loaded?.statuses) {
       return []
     }
     let gameWon = false
@@ -97,7 +97,7 @@ function App() {
   const [statuses, setStatuses] = useState<Map<string, CharStatus[]>>(() => {
     const loaded = loadGameStateFromLocalStorage()
     //TODO: detect solution commitment change
-    if (!loaded || Date.now() > loaded.tomorrow) {
+    if (!loaded?.statuses || Date.now() > loaded.tomorrow) {
       return new Map()
     }
     return loaded!.statuses
