@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 import { Grid } from './components/grid/Grid'
 import { Keyboard } from './components/keyboard/Keyboard'
 import { InfoModal } from './components/modals/InfoModal'
@@ -15,6 +15,9 @@ import {
   WORD_NOT_FOUND_MESSAGE,
   CORRECT_WORD_MESSAGE,
   HARD_MODE_ALERT_MESSAGE,
+  INCORRECT_PROOF_TEXT,
+  PROOF_VERIFICATION_HINT,
+  VERIFY_BTN_TEXT,
 } from './constants/strings'
 import {
   MAX_WORD_LENGTH,
@@ -43,6 +46,7 @@ import { AlertContainer } from './components/alerts/AlertContainer'
 import { useAlert } from './context/AlertContext'
 import { Navbar } from './components/navbar/Navbar'
 import { CharStatus, getGuessStatuses } from './lib/statuses'
+import { PlonkProof } from './zk/prove'
 
 const client = createClient({
   autoConnect: true,
@@ -279,6 +283,18 @@ function App() {
     }
   }
 
+  const handleProofChange = (event: ChangeEvent<HTMLInputElement>) => {
+    let pasted = event?.target?.value
+    let proofString = pasted.substring(pasted.indexOf('{"proof'))
+    try {
+      let proof = JSON.parse(proofString) as PlonkProof
+      //TODO verify proof
+      console.log(proof)
+    } catch (e) {
+      showErrorAlert(INCORRECT_PROOF_TEXT)
+    }
+  }
+
   return (
     <WagmiConfig client={client}>
       <div className="h-screen flex flex-col">
@@ -296,6 +312,25 @@ function App() {
               isRevealing={isRevealing}
               currentRowClassName={currentRowClass}
             />
+            <div className="flex justify-center mb-1">
+              <input
+                className="border-solid border-2 rounded"
+                style={{ margin: 5, minWidth: 300, paddingInline: 5 }}
+                type="text"
+                name="proof"
+                placeholder={PROOF_VERIFICATION_HINT}
+                onChange={handleProofChange}
+              />
+            </div>
+            <div className="flex justify-center mb-1">
+              <button
+                type="button"
+                className="mt-2 rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                onClick={() => {}}
+              >
+                {VERIFY_BTN_TEXT}
+              </button>
+            </div>
           </div>
           <Keyboard
             onChar={onChar}

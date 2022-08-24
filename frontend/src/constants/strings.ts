@@ -25,3 +25,7 @@ export const TOTAL_TRIES_TEXT = 'Total tries'
 export const SUCCESS_RATE_TEXT = 'Success rate'
 export const CURRENT_STREAK_TEXT = 'Current streak'
 export const BEST_STREAK_TEXT = 'Best streak'
+export const INCORRECT_PROOF_TEXT =
+  'Please make sure that the proof is included in the pasted text'
+export const PROOF_VERIFICATION_HINT = "Paste other player's stats to verify"
+export const VERIFY_BTN_TEXT = 'Verify stats'
