@@ -25,4 +25,12 @@ contract ZKWordle is Ownable {
     {
         solutionCommitment[solutionIndex] = solution;
     }
+
+    function verifyStats(bytes memory proof, uint256[] memory pubSignals)
+        public
+        view
+        returns (bool)
+    {
+        return statsVerifier.verifyProof(proof, pubSignals);
+    }
 }

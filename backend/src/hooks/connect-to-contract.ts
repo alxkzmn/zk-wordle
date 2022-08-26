@@ -8,7 +8,6 @@ import contractAbi from "../blockchain_cache/ZKWordle.sol/ZKWordle.json";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default (app: Application): Hook => {
   let wallet: ethers.Wallet;
-  let zkWordleContract: ethers.Contract;
 
   if (!app.get("accountPrivateKey")) {
     throw new Error("Private key cannot be empty");
@@ -21,8 +20,8 @@ export default (app: Application): Hook => {
     );
   }
   //The 0th is GuessVerifier, the 1st is StatsVerifier, and the encapsulating ZKWordle is the 2nd one
-  let contractDeploymenTransaction = latestTestnetDeployment.transactions[2];
-  zkWordleContract = new ethers.Contract(
+  const contractDeploymenTransaction = latestTestnetDeployment.transactions[2];
+  const zkWordleContract = new ethers.Contract(
     contractDeploymenTransaction.contractAddress,
     contractAbi.abi,
     wallet

@@ -4,11 +4,26 @@ import './index.css'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
 import { AlertProvider } from './context/AlertContext'
+import { configureChains, chain, createClient, WagmiConfig } from 'wagmi'
+import { publicProvider } from 'wagmi/providers/public'
+
+const { chains, provider, webSocketProvider } = configureChains(
+  [chain.mainnet, chain.polygon, chain.hardhat],
+  [publicProvider()]
+)
+
+const client = createClient({
+  autoConnect: true,
+  provider,
+  webSocketProvider,
+})
 
 ReactDOM.render(
   <React.StrictMode>
     <AlertProvider>
-      <App />
+      <WagmiConfig client={client}>
+        <App />
+      </WagmiConfig>
     </AlertProvider>
   </React.StrictMode>,
   document.getElementById('root')

@@ -18,6 +18,15 @@ contract ZKWordleScript is Script {
             address(guessVerifier),
             address(statsVerifier)
         );
+
+        _copyBroadcast();
+
         vm.stopBroadcast();
+    }
+
+    function _copyBroadcast() internal {
+        string[] memory inputs = new string[](1);
+        inputs[0] = "script/copy-broadcast.sh";
+        vm.ffi(inputs);
     }
 }

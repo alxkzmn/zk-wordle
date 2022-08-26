@@ -10,3 +10,4 @@ blockchain/broadcast
 backend/src/blockchain_cache
 circuits/powers-of-tau
 backend/src/zk
+frontend/src/blockchain_cache

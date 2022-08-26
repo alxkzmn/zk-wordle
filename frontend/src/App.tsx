@@ -5,9 +5,10 @@ import { InfoModal } from './components/modals/InfoModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { SettingsModal } from './components/modals/SettingsModal'
 import { tomorrow } from './lib/words'
-import { WagmiConfig, createClient } from 'wagmi'
-import { getDefaultProvider } from 'ethers'
+import { useContract, useProvider } from 'wagmi'
 import { plonk } from 'snarkjs'
+import latestDeployment from './blockchain_cache/ZKWordle.s.sol/31337/run-latest.json'
+import contractAbi from './blockchain_cache/ZKWordle.sol/ZKWordle.json'
 
 import {
   WIN_MESSAGES,
@@ -48,11 +49,7 @@ import { useAlert } from './context/AlertContext'
 import { Navbar } from './components/navbar/Navbar'
 import { CharStatus, getGuessStatuses } from './lib/statuses'
 import { PlonkProof } from './zk/prove'
-
-const client = createClient({
-  autoConnect: true,
-  provider: getDefaultProvider(),
-})
+import { utils } from 'ffjavascript'
 
 function App() {
   const prefersDarkMode = window.matchMedia(
@@ -284,97 +281,108 @@ function App() {
     }
   }
 
-  const handleProofChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleProofChange = async (event: ChangeEvent<HTMLInputElement>) => {
     let pasted = event?.target?.value
     let proofString = pasted.substring(pasted.indexOf('{"proof'))
     try {
       let proof = JSON.parse(proofString) as PlonkProof
       //TODO verify proof
-      plonk
-        .exportSolidityCallData(proof.proof, proof.publicSignals)
-        .then((calldata: any) => console.log(calldata))
+      let calldata = await plonk.exportSolidityCallData(
+        utils.unstringifyBigInts(proof.proof),
+        utils.unstringifyBigInts(proof.publicSignals)
+      )
+      console.log(calldata)
+      const argv = calldata.replace(/[["\]]/g, '').split(',')
+
+      let result = await contract.verifyStats(argv[0], [argv[1]])
+      console.log(result)
     } catch (e) {
+      console.log(e)
       showErrorAlert(INCORRECT_PROOF_TEXT)
     }
   }
 
+  const contract = useContract({
+    addressOrName: latestDeployment.transactions[2].contractAddress,
+    contractInterface: contractAbi.abi,
+    signerOrProvider: useProvider(),
+  })
+
   return (
-    <WagmiConfig client={client}>
-      <div className="h-screen flex flex-col">
-        <Navbar
-          setIsInfoModalOpen={setIsInfoModalOpen}
-          setIsStatsModalOpen={setIsStatsModalOpen}
-          setIsSettingsModalOpen={setIsSettingsModalOpen}
-        />
-        <div className="pt-2 px-1 pb-8 md:max-w-7xl w-full mx-auto sm:px-6 lg:px-8 flex flex-col grow">
-          <div className="pb-6 grow">
-            <Grid
-              guesses={guesses}
-              statuses={statuses}
-              currentGuess={currentGuess}
-              isRevealing={isRevealing}
-              currentRowClassName={currentRowClass}
-            />
-            <div className="flex justify-center mb-1">
-              <input
-                className="border-solid border-2 rounded"
-                style={{ margin: 5, minWidth: 300, paddingInline: 5 }}
-                type="text"
-                name="proof"
-                placeholder={PROOF_VERIFICATION_HINT}
-                onChange={handleProofChange}
-              />
-            </div>
-            <div className="flex justify-center mb-1">
-              <button
-                type="button"
-                className="mt-2 rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-                onClick={() => {}}
-              >
-                {VERIFY_BTN_TEXT}
-              </button>
-            </div>
-          </div>
-          <Keyboard
-            onChar={onChar}
-            onDelete={onDelete}
-            onEnter={onEnter}
+    <div className="h-screen flex flex-col">
+      <Navbar
+        setIsInfoModalOpen={setIsInfoModalOpen}
+        setIsStatsModalOpen={setIsStatsModalOpen}
+        setIsSettingsModalOpen={setIsSettingsModalOpen}
+      />
+      <div className="pt-2 px-1 pb-8 md:max-w-7xl w-full mx-auto sm:px-6 lg:px-8 flex flex-col grow">
+        <div className="pb-6 grow">
+          <Grid
             guesses={guesses}
             statuses={statuses}
+            currentGuess={currentGuess}
             isRevealing={isRevealing}
+            currentRowClassName={currentRowClass}
           />
-          <InfoModal
-            isOpen={isInfoModalOpen}
-            handleClose={() => setIsInfoModalOpen(false)}
-          />
-          <StatsModal
-            isOpen={isStatsModalOpen}
-            handleClose={() => setIsStatsModalOpen(false)}
-            guesses={guesses}
-            statuses={statuses}
-            gameStats={stats}
-            isGameLost={isGameLost}
-            isGameWon={isGameWon}
-            handleShareToClipboard={() => showSuccessAlert(GAME_COPIED_MESSAGE)}
-            isHardMode={isHardMode}
-            isDarkMode={isDarkMode}
-            isHighContrastMode={isHighContrastMode}
-            numberOfGuessesMade={guesses.length}
-          />
-          <SettingsModal
-            isOpen={isSettingsModalOpen}
-            handleClose={() => setIsSettingsModalOpen(false)}
-            isHardMode={isHardMode}
-            handleHardMode={handleHardMode}
-            isDarkMode={isDarkMode}
-            handleDarkMode={handleDarkMode}
-            isHighContrastMode={isHighContrastMode}
-            handleHighContrastMode={handleHighContrastMode}
-          />
-          <AlertContainer />
+          <div className="flex justify-center mb-1">
+            <input
+              className="border-solid border-2 rounded"
+              style={{ margin: 5, minWidth: 300, paddingInline: 5 }}
+              type="text"
+              name="proof"
+              placeholder={PROOF_VERIFICATION_HINT}
+              onChange={handleProofChange}
+            />
+          </div>
+          <div className="flex justify-center mb-1">
+            <button
+              type="button"
+              className="mt-2 rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+              onClick={() => {}}
+            >
+              {VERIFY_BTN_TEXT}
+            </button>
+          </div>
         </div>
+        <Keyboard
+          onChar={onChar}
+          onDelete={onDelete}
+          onEnter={onEnter}
+          guesses={guesses}
+          statuses={statuses}
+          isRevealing={isRevealing}
+        />
+        <InfoModal
+          isOpen={isInfoModalOpen}
+          handleClose={() => setIsInfoModalOpen(false)}
+        />
+        <StatsModal
+          isOpen={isStatsModalOpen}
+          handleClose={() => setIsStatsModalOpen(false)}
+          guesses={guesses}
+          statuses={statuses}
+          gameStats={stats}
+          isGameLost={isGameLost}
+          isGameWon={isGameWon}
+          handleShareToClipboard={() => showSuccessAlert(GAME_COPIED_MESSAGE)}
+          isHardMode={isHardMode}
+          isDarkMode={isDarkMode}
+          isHighContrastMode={isHighContrastMode}
+          numberOfGuessesMade={guesses.length}
+        />
+        <SettingsModal
+          isOpen={isSettingsModalOpen}
+          handleClose={() => setIsSettingsModalOpen(false)}
+          isHardMode={isHardMode}
+          handleHardMode={handleHardMode}
+          isDarkMode={isDarkMode}
+          handleDarkMode={handleDarkMode}
+          isHighContrastMode={isHighContrastMode}
+          handleHighContrastMode={handleHighContrastMode}
+        />
+        <AlertContainer />
       </div>
-    </WagmiConfig>
+    </div>
   )
 }
 
