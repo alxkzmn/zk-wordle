@@ -7,6 +7,7 @@ import { SettingsModal } from './components/modals/SettingsModal'
 import { tomorrow } from './lib/words'
 import { WagmiConfig, createClient } from 'wagmi'
 import { getDefaultProvider } from 'ethers'
+import { plonk } from 'snarkjs'
 
 import {
   WIN_MESSAGES,
@@ -289,7 +290,9 @@ function App() {
     try {
       let proof = JSON.parse(proofString) as PlonkProof
       //TODO verify proof
-      console.log(proof)
+      plonk
+        .exportSolidityCallData(proof.proof, proof.publicSignals)
+        .then((calldata: any) => console.log(calldata))
     } catch (e) {
       showErrorAlert(INCORRECT_PROOF_TEXT)
     }
