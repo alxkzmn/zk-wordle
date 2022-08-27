@@ -1,3 +1,4 @@
+import { PlonkProof } from './../../../backend/src/utils/proof'
 import { asAsciiArray } from './asAsciiArray'
 import { requestProof } from './../zk/prove'
 import { unicodeSplit } from './words'
@@ -23,16 +24,25 @@ export const getStatuses = (
   return charObj
 }
 
+export interface StatusesAndProof {
+  statuses: CharStatus[]
+  proof: PlonkProof
+}
+
 export const getGuessStatuses = async (
   guess: string
-): Promise<CharStatus[]> => {
-  return requestProof(asAsciiArray(guess)).then((proof) =>
-    Array.from(
-      proof
-        .map((status) =>
-          status == 0 ? 'absent' : status == 1 ? 'correct' : 'present'
-        )
-        .values()
-    )
-  )
+): Promise<StatusesAndProof> => {
+  return requestProof(asAsciiArray(guess)).then((proof) => {
+    let clue = proof.publicSignals.slice(0, 5).map((ascii) => Number(ascii))
+    return {
+      statuses: Array.from(
+        clue
+          .map((status) =>
+            status == 0 ? 'absent' : status == 1 ? 'correct' : 'present'
+          )
+          .values()
+      ),
+      proof: proof,
+    }
+  })
 }

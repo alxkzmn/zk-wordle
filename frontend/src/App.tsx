@@ -233,15 +233,31 @@ function App() {
       }
     }
 
+    // turn this back off after all
+    // chars have been revealed
     setIsRevealing(true)
     setGuesses([...guesses, currentGuess])
 
-    // turn this back off after all
-    // chars have been revealed
-    let status = await getGuessStatuses(currentGuess)
-    setStatuses(new Map(statuses.set(currentGuess, status)))
+    let result = await getGuessStatuses(currentGuess)
 
-    const gameWasWon = !status.includes('absent') && !status.includes('present')
+    try {
+      let calldata = await plonk.exportSolidityCallData(
+        utils.unstringifyBigInts(result.proof.proof),
+        utils.unstringifyBigInts(result.proof.publicSignals)
+      )
+      const argv = calldata.split(',')
+      contract
+        .verifyClues(argv[0], result.proof.publicSignals)
+        .then((verificationResult: any) => console.log(verificationResult))
+    } catch (e) {
+      console.log(e)
+    }
+
+    setStatuses(new Map(statuses.set(currentGuess, result.statuses)))
+
+    const gameWasWon =
+      !result.statuses.includes('absent') &&
+      !result.statuses.includes('present')
     if (gameWasWon) {
       setIsGameWon(true)
     }
@@ -286,15 +302,13 @@ function App() {
     let proofString = pasted.substring(pasted.indexOf('{"proof'))
     try {
       let proof = JSON.parse(proofString) as PlonkProof
-      //TODO verify proof
       let calldata = await plonk.exportSolidityCallData(
         utils.unstringifyBigInts(proof.proof),
         utils.unstringifyBigInts(proof.publicSignals)
       )
-      console.log(calldata)
-      const argv = calldata.replace(/[["\]]/g, '').split(',')
+      const argv = calldata.split(',')
 
-      let result = await contract.verifyStats(argv[0], [argv[1]])
+      let result = await contract.verifyStats(argv[0], proof.publicSignals)
       console.log(result)
     } catch (e) {
       console.log(e)

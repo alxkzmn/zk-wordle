@@ -28,11 +28,13 @@ export interface PlonkProof {
   publicSignals: string[]
 }
 
-export const requestProof = async (asciiGuess: number[]): Promise<number[]> => {
+export const requestProof = async (
+  asciiGuess: number[]
+): Promise<PlonkProof> => {
   console.log(`Guess: ${asciiGuess}`)
 
   const feathersClient = feathers()
-  //TODO prepare for deployment
+  //TODO put in a config
   const restClient = rest('http://localhost:3030')
 
   feathersClient.configure(restClient.axios(axios))
@@ -45,5 +47,5 @@ export const requestProof = async (asciiGuess: number[]): Promise<number[]> => {
     throw Error(e as any)
   }
 
-  return result.publicSignals.slice(0, 5).map((ascii) => Number(ascii))
+  return result
 }

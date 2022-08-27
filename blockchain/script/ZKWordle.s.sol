@@ -8,8 +8,6 @@ import "../src/check_stats.sol";
 import "forge-std/console.sol";
 
 contract ZKWordleScript is Script {
-    function setUp() public {}
-
     function run() public {
         vm.startBroadcast();
         GuessVerifier guessVerifier = new GuessVerifier();
@@ -18,10 +16,9 @@ contract ZKWordleScript is Script {
             address(guessVerifier),
             address(statsVerifier)
         );
-
-        _copyBroadcast();
-
         vm.stopBroadcast();
+        //FIXME file is not yet ready at this point, copy manually?
+        _copyBroadcast();
     }
 
     function _copyBroadcast() internal {
