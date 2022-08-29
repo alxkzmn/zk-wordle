@@ -7,7 +7,7 @@ import { AlertProvider } from './context/AlertContext'
 import { configureChains, chain, createClient, WagmiConfig } from 'wagmi'
 import { publicProvider } from 'wagmi/providers/public'
 
-const { chains, provider, webSocketProvider } = configureChains(
+const { provider, webSocketProvider } = configureChains(
   [chain.mainnet, chain.polygon, chain.hardhat],
   [publicProvider()]
 )

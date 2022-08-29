@@ -29,3 +29,8 @@ export const INCORRECT_PROOF_TEXT =
   'Please make sure that the proof is included in the pasted text'
 export const PROOF_VERIFICATION_HINT = "Paste other player's stats to verify"
 export const VERIFY_BTN_TEXT = 'Verify stats'
+export const GUESS_WAS_VERIFIED = 'The validity of this clue is proven with ZKP'
+export const VERIFYING = 'Verifying...'
+export const STATS_VALID = 'Stats valid'
+export const STATS_INVALID = 'Stats invalid'
+export const STATS_WAS_VERIFIED = 'Verified with ZKP'

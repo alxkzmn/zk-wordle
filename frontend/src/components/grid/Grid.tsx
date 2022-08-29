@@ -10,6 +10,7 @@ type Props = {
   currentGuess: string
   isRevealing?: boolean
   currentRowClassName: string
+  guessesProven: Map<string, boolean>
 }
 
 export const Grid = ({
@@ -18,6 +19,7 @@ export const Grid = ({
   currentGuess,
   isRevealing,
   currentRowClassName,
+  guessesProven,
 }: Props) => {
   const empties =
     guesses.length < MAX_CHALLENGES - 1
@@ -34,6 +36,7 @@ export const Grid = ({
           guess={guess}
           status={statuses.size > 0 ? statuses.get(guess) ?? [] : []}
           isRevealing={isRevealing && guesses.length - 1 === i}
+          guessProven={guessesProven.get(guess) ?? false}
         />
       ))}
       {!isRevealing && guesses.length < MAX_CHALLENGES && (

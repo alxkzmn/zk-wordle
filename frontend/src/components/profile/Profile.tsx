@@ -8,6 +8,9 @@ export function Profile() {
     connector: new InjectedConnector(),
   })
 
-  if (isConnected) return <div>Connected to {ensName ?? address}</div>
+  if (isConnected)
+    return (
+      <div className="dark:text-white">Connected to {ensName ?? address}</div>
+    )
   return <button onClick={() => connect()}>Connect Wallet</button>
 }

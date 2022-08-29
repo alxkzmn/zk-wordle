@@ -19,7 +19,10 @@ import {
   HARD_MODE_ALERT_MESSAGE,
   INCORRECT_PROOF_TEXT,
   PROOF_VERIFICATION_HINT,
-  VERIFY_BTN_TEXT,
+  STATS_WAS_VERIFIED,
+  VERIFYING,
+  STATS_VALID,
+  STATS_INVALID,
 } from './constants/strings'
 import {
   MAX_WORD_LENGTH,
@@ -50,6 +53,13 @@ import { Navbar } from './components/navbar/Navbar'
 import { CharStatus, getGuessStatuses } from './lib/statuses'
 import { PlonkProof } from './zk/prove'
 import { utils } from 'ffjavascript'
+import LoadingSpinner from './components/progress/Spinner'
+import {
+  ShieldCheckIcon,
+  ShieldExclamationIcon,
+} from '@heroicons/react/outline'
+
+type ProofStatus = 'missing' | 'proving' | 'proven'
 
 function App() {
   const prefersDarkMode = window.matchMedia(
@@ -105,7 +115,14 @@ function App() {
     return loaded!.statuses
   })
 
+  const [guessesProven, setGuessProven] = useState<Map<string, boolean>>(
+    new Map()
+  )
+
   const [stats, setStats] = useState(() => loadStats())
+  const [statsVerificationStatus, setStatsVerificationStatus] =
+    useState<ProofStatus>('missing')
+  const [isStatsValid, setIsStatsValid] = useState(false)
 
   const [isHardMode, setIsHardMode] = useState(
     localStorage.getItem('gameMode')
@@ -248,7 +265,10 @@ function App() {
       const argv = calldata.split(',')
       contract
         .verifyClues(argv[0], result.proof.publicSignals)
-        .then((verificationResult: any) => console.log(verificationResult))
+        .then((verificationResult: any) => {
+          guessesProven.set(currentGuess, verificationResult)
+          setGuessProven(new Map(guessesProven))
+        })
     } catch (e) {
       console.log(e)
     }
@@ -298,8 +318,16 @@ function App() {
   }
 
   const handleProofChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    let pasted = event?.target?.value
-    let proofString = pasted.substring(pasted.indexOf('{"proof'))
+    setIsStatsValid(false)
+    setStatsVerificationStatus('missing')
+    let pasted = event?.target?.value.replace(/[\n\r\t\s]+/g, '')
+    if (!pasted) return
+    const proofStartIndex = pasted.indexOf('{"proof')
+    if (proofStartIndex < 0) {
+      showErrorAlert(INCORRECT_PROOF_TEXT)
+      return
+    }
+    let proofString = pasted.substring(proofStartIndex)
     try {
       let proof = JSON.parse(proofString) as PlonkProof
       let calldata = await plonk.exportSolidityCallData(
@@ -307,9 +335,10 @@ function App() {
         utils.unstringifyBigInts(proof.publicSignals)
       )
       const argv = calldata.split(',')
-
+      setStatsVerificationStatus('proving')
       let result = await contract.verifyStats(argv[0], proof.publicSignals)
-      console.log(result)
+      setIsStatsValid(result)
+      setStatsVerificationStatus('proven')
     } catch (e) {
       console.log(e)
       showErrorAlert(INCORRECT_PROOF_TEXT)
@@ -321,7 +350,6 @@ function App() {
     contractInterface: contractAbi.abi,
     signerOrProvider: useProvider(),
   })
-
   return (
     <div className="h-screen flex flex-col">
       <Navbar
@@ -337,6 +365,7 @@ function App() {
             currentGuess={currentGuess}
             isRevealing={isRevealing}
             currentRowClassName={currentRowClass}
+            guessesProven={guessesProven}
           />
           <div className="flex justify-center mb-1">
             <input
@@ -348,14 +377,20 @@ function App() {
               onChange={handleProofChange}
             />
           </div>
-          <div className="flex justify-center mb-1">
-            <button
-              type="button"
-              className="mt-2 rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-              onClick={() => {}}
-            >
-              {VERIFY_BTN_TEXT}
-            </button>
+
+          <div className="flex justify-center mb-1 dark:text-white">
+            {statsVerificationStatus == 'proving' && VERIFYING}
+            {statsVerificationStatus == 'proving' && <LoadingSpinner />}
+            {statsVerificationStatus == 'proven' &&
+              (isStatsValid ? STATS_VALID : STATS_INVALID)}
+            {statsVerificationStatus == 'proven' &&
+              (isStatsValid ? (
+                <div title={STATS_WAS_VERIFIED}>
+                  <ShieldCheckIcon className="h-6 w-6 cursor-pointer dark:stroke-white" />
+                </div>
+              ) : (
+                <ShieldExclamationIcon className="h-6 w-6 cursor-pointer dark:stroke-white" />
+              ))}
           </div>
         </div>
         <Keyboard
