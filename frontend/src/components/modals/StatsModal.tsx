@@ -14,11 +14,10 @@ import {
 import { CharStatus } from '../../lib/statuses'
 import LoadingSpinner from '../progress/Spinner'
 import { useState } from 'react'
-import feathers, { rest } from '@feathersjs/client'
-import axios from 'axios'
 import { MAX_CHALLENGES } from '../../constants/settings'
 import { asAsciiArray } from '../../lib/asAsciiArray'
 import { PlonkProof } from '../../zk/prove'
+import { Application } from '@feathersjs/feathers'
 
 type Props = {
   isOpen: boolean
@@ -33,13 +32,8 @@ type Props = {
   isDarkMode: boolean
   isHighContrastMode: boolean
   numberOfGuessesMade: number
+  feathersClient: Application
 }
-
-const feathersClient = feathers()
-//TODO prepare for deployment
-const restClient = rest('http://localhost:3030')
-
-feathersClient.configure(restClient.axios(axios))
 
 export const StatsModal = ({
   isOpen,
@@ -54,6 +48,7 @@ export const StatsModal = ({
   isDarkMode,
   isHighContrastMode,
   numberOfGuessesMade,
+  feathersClient,
 }: Props) => {
   const [isProving, setIsProving] = useState(false)
 

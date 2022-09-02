@@ -28,6 +28,7 @@ export default (app: Application): Hook => {
   );
   return async (context: HookContext): Promise<HookContext> => {
     context.params.zkWordleContract = zkWordleContract;
+    context.params.wallet = wallet;
 
     return context;
   };

@@ -4,7 +4,6 @@ import { Params } from "@feathersjs/feathers";
 import { plonk } from "snarkjs";
 import { solution, solutionIndex } from "../../utils/words";
 import { asAsciiArray } from "../../utils/asAsciiArray";
-import { buildPoseidon } from "circomlibjs";
 import { BigNumber } from "ethers";
 
 const CIRCUIT_WASM_PATH = "src/zk/check_guess.wasm";
@@ -30,40 +29,16 @@ export class Clue extends Service {
     console.log("Solution index:", solutionIndex);
 
     //Poseidon hash is a BigInt
-    let solutionCommitment = BigNumber.from(
+    const solutionCommitment = BigNumber.from(
       await params?.zkWordleContract?.solutionCommitment(solutionIndex)
     );
-    let asciiSolution = asAsciiArray(solution);
+    const asciiSolution = asAsciiArray(solution);
     //If the mapping in a smart contract returns zero, it means that either the day has changed and the solution index is different,
     //or the game hasn't yet started
     if (solutionCommitment.isZero()) {
-      console.log("Solution commitment not found, creating...");
-      //Creating new salt for the new solution
-      this.salt = (
-        await this.app
-          .service("salt")
-          .create({ solutionIndex: solutionIndex }, {})
-      ).salt;
-
-      let poseidon = await buildPoseidon();
-      //Converting solution to a single number in the same way as the circuit does.
-      let solutionAsNum = 0;
-      for (let i = 0; i < asciiSolution.length; i++) {
-        solutionAsNum += asciiSolution[i] * Math.pow(100, i);
-      }
-      const hashed = BigNumber.from(
-        poseidon.F.toObject(poseidon([solutionAsNum, this.salt]))
+      throw new Error(
+        "Solution commitment not found, impossible to verify clue"
       );
-      console.log("Commitment: " + hashed);
-      const tx = await params?.zkWordleContract?.commitSolution(
-        solutionIndex,
-        hashed
-      );
-      const receipt = await tx.wait();
-      console.log(
-        receipt.status ? "Commitment created" : "Could not create commitment"
-      );
-      solutionCommitment = hashed;
     } else {
       console.log("Solution commitment found: ", solutionCommitment.toString());
       this.salt = (await this.app.service("salt").get(solutionIndex, {})).salt;
@@ -76,12 +51,12 @@ export class Clue extends Service {
       hash: solutionCommitment.toString(),
     };
     console.log("Args:", args);
-    let proof = await plonk.fullProve(
+    const proof = await plonk.fullProve(
       args,
       CIRCUIT_WASM_PATH,
       CIRCUIT_ZKEY_PATH
     );
-    console.log(`Proof generated`);
+    console.log("Proof generated");
     console.log(proof);
 
     return super.create(proof, params);

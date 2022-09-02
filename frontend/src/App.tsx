@@ -4,8 +4,8 @@ import { Keyboard } from './components/keyboard/Keyboard'
 import { InfoModal } from './components/modals/InfoModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { SettingsModal } from './components/modals/SettingsModal'
-import { tomorrow } from './lib/words'
-import { useContract, useProvider } from 'wagmi'
+import { solutionIndex, tomorrow } from './lib/words'
+import { useContract, useSigner } from 'wagmi'
 import { plonk } from 'snarkjs'
 import latestDeployment from './blockchain_cache/ZKWordle.s.sol/31337/run-latest.json'
 import contractAbi from './blockchain_cache/ZKWordle.sol/ZKWordle.json'
@@ -58,14 +58,26 @@ import {
   ShieldCheckIcon,
   ShieldExclamationIcon,
 } from '@heroicons/react/outline'
+import feathers, { rest } from '@feathersjs/client'
+import axios from 'axios'
+import { BigNumber } from 'ethers'
 
 type ProofStatus = 'missing' | 'proving' | 'proven'
-
+type CommitmentResponse = {
+  solutionIndex: number
+  hashedSolution: BigNumber
+  signature: string
+}
 function App() {
+  const feathersClient = feathers()
+  //TODO prepare for deployment
+  const restClient = rest('http://localhost:3030')
+
+  feathersClient.configure(restClient.axios(axios))
+
   const prefersDarkMode = window.matchMedia(
     '(prefers-color-scheme: dark)'
   ).matches
-
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
   const [currentGuess, setCurrentGuess] = useState('')
@@ -129,6 +141,51 @@ function App() {
       ? localStorage.getItem('gameMode') === 'hard'
       : false
   )
+  const { data: signer } = useSigner()
+  const contract = useContract({
+    addressOrName: latestDeployment.transactions[2].contractAddress,
+    contractInterface: contractAbi.abi,
+    signerOrProvider: signer,
+  })
+
+  useEffect(() => {
+    if (signer) {
+      try {
+        console.log('Getting commitment')
+        console.log(contract)
+        contract.solutionCommitment(solutionIndex).then((res: any) => {
+          console.log(res)
+          if (res.isZero()) {
+            console.log('Commitment not found')
+            feathersClient
+              .service('commitment')
+              .create({})
+              .then(
+                ({
+                  solutionIndex,
+                  hashedSolution,
+                  signature,
+                }: CommitmentResponse) => {
+                  contract
+                    .commitSolution(solutionIndex, hashedSolution, signature)
+                    .then((tx: any) => {
+                      tx.wait().then((res: any) => {
+                        if (res.status) {
+                          console.log('commitment successfully created')
+                        }
+                      })
+                    })
+                }
+              )
+          } else {
+            console.log('Commitment found, proceeding')
+          }
+        })
+      } catch (e) {
+        throw Error(e as any)
+      }
+    }
+  }, [signer])
 
   useEffect(() => {
     // if no game state on load,
@@ -345,11 +402,6 @@ function App() {
     }
   }
 
-  const contract = useContract({
-    addressOrName: latestDeployment.transactions[2].contractAddress,
-    contractInterface: contractAbi.abi,
-    signerOrProvider: useProvider(),
-  })
   return (
     <div className="h-screen flex flex-col">
       <Navbar
@@ -418,6 +470,7 @@ function App() {
           isDarkMode={isDarkMode}
           isHighContrastMode={isHighContrastMode}
           numberOfGuessesMade={guesses.length}
+          feathersClient={feathersClient}
         />
         <SettingsModal
           isOpen={isSettingsModalOpen}
