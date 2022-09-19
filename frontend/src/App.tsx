@@ -7,8 +7,7 @@ import { SettingsModal } from './components/modals/SettingsModal'
 import { solutionIndex, tomorrow } from './lib/words'
 import { useContract, useSigner } from 'wagmi'
 import { plonk } from 'snarkjs'
-import latestDeployment from './blockchain_cache/ZKWordle.s.sol/31337/run-latest.json'
-import contractAbi from './blockchain_cache/ZKWordle.sol/ZKWordle.json'
+import contractAbi from './contracts/ZKWordle.sol/ZKWordle.json'
 
 import {
   WIN_MESSAGES,
@@ -61,6 +60,7 @@ import {
 import feathers, { rest } from '@feathersjs/client'
 import axios from 'axios'
 import { BigNumber } from 'ethers'
+import { env } from 'process'
 
 type ProofStatus = 'missing' | 'proving' | 'proven'
 type CommitmentResponse = {
@@ -143,7 +143,10 @@ function App() {
   )
   const { data: signer } = useSigner()
   const contract = useContract({
-    addressOrName: latestDeployment.transactions[2].contractAddress,
+    addressOrName:
+      process.env.NODE_ENV === 'production'
+        ? '0xa47b27728ef69dddc22acc706c2d1810adc72bad'
+        : '0xa47b27728ef69dddc22acc706c2d1810adc72bad',
     contractInterface: contractAbi.abi,
     signerOrProvider: signer,
   })

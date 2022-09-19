@@ -15,7 +15,7 @@ contract ZKWordleScript is Script {
         ZKWordle zkWordle = new ZKWordle(
             address(guessVerifier),
             address(statsVerifier),
-            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+            msg.sender
         );
         vm.stopBroadcast();
         //FIXME file is not yet ready at this point, copy manually?
