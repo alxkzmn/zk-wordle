@@ -1,7 +1,7 @@
 {
   "name": "zk-wordle-frontend",
   "version": "0.1.0",
-  "private": true,
+  "homepage": "https://alxkzmn.github.io/zk-wordle/",
   "dependencies": {
     "@feathersjs/client": "^4.5.15",
     "@feathersjs/feathers": "^4.5.15",

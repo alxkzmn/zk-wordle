@@ -18,8 +18,6 @@ jobs:
           cd frontend
           npm ci
           npm run build
-        env:
-          PUBLIC_URL:
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
