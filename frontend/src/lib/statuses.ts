@@ -14,8 +14,8 @@ export const getStatuses = (
   guesses.forEach((guess) => {
     let status = statuses.get(guess) ?? []
     unicodeSplit(guess).forEach((letter, i) => {
-      if (status[i] == 'correct') charObj[letter] = 'correct'
-      if (!charObj[letter] && status[i] == 'present')
+      if (status[i] === 'correct') charObj[letter] = 'correct'
+      if (!charObj[letter] && status[i] === 'present')
         charObj[letter] = 'present'
       if (!charObj[letter]) charObj[letter] = 'absent'
     })
@@ -38,7 +38,7 @@ export const getGuessStatuses = async (
       statuses: Array.from(
         clue
           .map((status) =>
-            status == 0 ? 'absent' : status == 1 ? 'correct' : 'present'
+            status === 0 ? 'absent' : status === 1 ? 'correct' : 'present'
           )
           .values()
       ),

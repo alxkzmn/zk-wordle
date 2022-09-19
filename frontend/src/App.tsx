@@ -60,7 +60,6 @@ import {
 import feathers, { rest } from '@feathersjs/client'
 import axios from 'axios'
 import { BigNumber } from 'ethers'
-import { env } from 'process'
 
 type ProofStatus = 'missing' | 'proving' | 'proven'
 type CommitmentResponse = {
@@ -188,7 +187,7 @@ function App() {
         throw Error(e as any)
       }
     }
-  }, [signer])
+  }, [contract, feathersClient, signer])
 
   useEffect(() => {
     // if no game state on load,
@@ -434,11 +433,11 @@ function App() {
           </div>
 
           <div className="flex justify-center mb-1 dark:text-white">
-            {statsVerificationStatus == 'proving' && VERIFYING}
-            {statsVerificationStatus == 'proving' && <LoadingSpinner />}
-            {statsVerificationStatus == 'proven' &&
+            {statsVerificationStatus === 'proving' && VERIFYING}
+            {statsVerificationStatus === 'proving' && <LoadingSpinner />}
+            {statsVerificationStatus === 'proven' &&
               (isStatsValid ? STATS_VALID : STATS_INVALID)}
-            {statsVerificationStatus == 'proven' &&
+            {statsVerificationStatus === 'proven' &&
               (isStatsValid ? (
                 <div title={STATS_WAS_VERIFIED}>
                   <ShieldCheckIcon className="h-6 w-6 cursor-pointer dark:stroke-white" />
