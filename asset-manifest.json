@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/static/css/main.9c2f9d8f.css",
-    "main.js": "/static/js/main.6c08586d.js",
-    "static/js/419.ef194225.chunk.js": "/static/js/419.ef194225.chunk.js",
-    "static/js/563.0334855a.chunk.js": "/static/js/563.0334855a.chunk.js",
-    "static/js/787.1dcfd89e.chunk.js": "/static/js/787.1dcfd89e.chunk.js",
-    "static/js/163.12e48b39.chunk.js": "/static/js/163.12e48b39.chunk.js",
-    "index.html": "/index.html",
-    "main.9c2f9d8f.css.map": "/static/css/main.9c2f9d8f.css.map",
-    "main.6c08586d.js.map": "/static/js/main.6c08586d.js.map",
-    "419.ef194225.chunk.js.map": "/static/js/419.ef194225.chunk.js.map",
-    "787.1dcfd89e.chunk.js.map": "/static/js/787.1dcfd89e.chunk.js.map",
-    "163.12e48b39.chunk.js.map": "/static/js/163.12e48b39.chunk.js.map"
+    "main.css": "/zk-wordle/static/css/main.9c2f9d8f.css",
+    "main.js": "/zk-wordle/static/js/main.2eb00000.js",
+    "static/js/419.40a0d5a1.chunk.js": "/zk-wordle/static/js/419.40a0d5a1.chunk.js",
+    "static/js/563.0334855a.chunk.js": "/zk-wordle/static/js/563.0334855a.chunk.js",
+    "static/js/787.1dcfd89e.chunk.js": "/zk-wordle/static/js/787.1dcfd89e.chunk.js",
+    "static/js/163.12e48b39.chunk.js": "/zk-wordle/static/js/163.12e48b39.chunk.js",
+    "index.html": "/zk-wordle/index.html",
+    "main.9c2f9d8f.css.map": "/zk-wordle/static/css/main.9c2f9d8f.css.map",
+    "main.2eb00000.js.map": "/zk-wordle/static/js/main.2eb00000.js.map",
+    "419.40a0d5a1.chunk.js.map": "/zk-wordle/static/js/419.40a0d5a1.chunk.js.map",
+    "787.1dcfd89e.chunk.js.map": "/zk-wordle/static/js/787.1dcfd89e.chunk.js.map",
+    "163.12e48b39.chunk.js.map": "/zk-wordle/static/js/163.12e48b39.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.9c2f9d8f.css",
-    "static/js/main.6c08586d.js"
+    "static/js/main.2eb00000.js"
   ]
 }
