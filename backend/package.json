@@ -23,12 +23,12 @@
     "test": "npm run lint && npm run compile && npm run jest",
     "lint": "eslint src/. test/. --config .eslintrc.json --ext .ts --fix",
     "dev": "ts-node-dev --no-notify src/",
-    "start": "npm run compile && node lib/",
+    "start": "node lib/",
+    "start-dev": "npm run compile && node lib/",
     "jest": "jest --forceExit",
     "compile": "shx rm -rf lib/ && tsc",
     "tsc": "./node_modules/typescript/bin/tsc",
-    "build": "tsc",
-    "postinstall": "npm run build"
+    "postinstall": "npm run tsc"
   },
   "standard": {
     "env": [
