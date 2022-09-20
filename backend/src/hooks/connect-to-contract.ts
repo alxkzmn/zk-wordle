@@ -2,8 +2,7 @@
 // For more information on hooks see: http://docs.feathersjs.com/api/hooks.html
 import { Application, Hook, HookContext } from "@feathersjs/feathers";
 import { ethers } from "ethers";
-import latestTestnetDeployment from "../blockchain_cache/ZKWordle.s.sol/31337/run-latest.json";
-import contractAbi from "../blockchain_cache/ZKWordle.sol/ZKWordle.json";
+import contractAbi from "../blockchain/ZKWordle.sol/ZKWordle.json";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default (app: Application): Hook => {
@@ -20,9 +19,10 @@ export default (app: Application): Hook => {
     );
   }
   //The 0th is GuessVerifier, the 1st is StatsVerifier, and the encapsulating ZKWordle is the 2nd one
-  const contractDeploymenTransaction = latestTestnetDeployment.transactions[2];
   const zkWordleContract = new ethers.Contract(
-    contractDeploymenTransaction.contractAddress,
+    process.env.NODE_ENV === "production"
+      ? "0xa47b27728ef69dddc22acc706c2d1810adc72bad"
+      : "0xa47b27728ef69dddc22acc706c2d1810adc72bad",
     contractAbi.abi,
     wallet
   );

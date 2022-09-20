@@ -17,7 +17,7 @@ export function Profile() {
 
   if (isConnected) {
     return (
-      <div>
+      <div className="dark:text-white">
         {ensName && <img src={ensAvatar ?? ''} alt="" />}
         <div>
           {ensName
@@ -40,7 +40,10 @@ export function Profile() {
   return (
     <div>
       {!isConnected && (
-        <button onClick={() => setConnectionModalOpen(true)}>
+        <button
+          className="dark:text-white"
+          onClick={() => setConnectionModalOpen(true)}
+        >
           Connect Wallet
         </button>
       )}
