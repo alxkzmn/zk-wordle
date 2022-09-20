@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - master
-env:
-  SERVER_URL: ${{ secrets.SERVER_URL }}
 permissions:
   contents: write
 jobs:
@@ -20,6 +18,8 @@ jobs:
           cd frontend
           npm ci
           npm run build
+        env:
+          SERVER_URL: ${{ secrets.SERVER_URL }}
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
