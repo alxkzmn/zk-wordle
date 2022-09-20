@@ -1,5 +1,6 @@
 import { Application } from "@feathersjs/express";
 import { HooksObject } from "@feathersjs/feathers";
+import { disallow } from "feathers-hooks-common";
 
 import connectToContract from "../../hooks/connect-to-contract";
 
@@ -7,12 +8,12 @@ export default (app: Application): Partial<HooksObject> => {
   return {
     before: {
       all: [],
-      find: [],
-      get: [],
+      find: [disallow()],
+      get: [disallow()],
       create: [connectToContract(app)],
-      update: [],
-      patch: [],
-      remove: [],
+      update: [disallow()],
+      patch: [disallow()],
+      remove: [disallow()],
     },
 
     after: {
