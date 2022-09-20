@@ -1,0 +1,1 @@
+(self.webpackChunkzk_wordle_frontend=self.webpackChunkzk_wordle_frontend||[]).push([[654],{24654:function(){}}]);
