@@ -26,7 +26,7 @@
     "start": "npm run compile && node lib/",
     "jest": "jest --forceExit",
     "compile": "shx rm -rf lib/ && tsc",
-    "deploy": "tsc && node lib/"
+    "deploy": "node src/"
   },
   "standard": {
     "env": [
