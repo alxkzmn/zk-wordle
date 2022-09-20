@@ -69,8 +69,7 @@ type CommitmentResponse = {
 }
 function App() {
   const feathersClient = feathers()
-  //TODO prepare for deployment
-  const restClient = rest('http://localhost:3030')
+  const restClient = rest(process.env.SERVER_URL)
 
   feathersClient.configure(restClient.axios(axios))
 

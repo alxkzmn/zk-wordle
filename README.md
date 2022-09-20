@@ -31,11 +31,13 @@ This is an Anvil test account's private key - don't use it in production, everyo
 ```bash
 cd backend
 npm install
-npm start
+npm run start-dev
 ```
 
 ## Run the frontend
 
+1. Rename `frontend/.env.example` to `frontend/.env`
+2. Run
 ```bash
 cd frontend
 npm install

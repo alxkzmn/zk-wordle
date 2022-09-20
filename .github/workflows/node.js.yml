@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+env:
+  SERVER_URL: ${{ secrets.SERVER_URL }}
 permissions:
   contents: write
 jobs:

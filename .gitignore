@@ -9,3 +9,4 @@ blockchain/out
 blockchain/broadcast
 circuits/powers-of-tau
 backend/src/zk
+frontend/.env
