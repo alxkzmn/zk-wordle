@@ -28,7 +28,7 @@
     "compile": "shx rm -rf lib/ && tsc",
     "tsc": "./node_modules/typescript/bin/tsc",
     "build": "tsc",
-    "deploy": "npm run build"
+    "postinstall": "npm run build"
   },
   "standard": {
     "env": [
