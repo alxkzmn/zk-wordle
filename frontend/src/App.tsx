@@ -313,7 +313,7 @@ function App() {
     setIsRevealing(true)
     setGuesses([...guesses, currentGuess])
 
-    let result = await getGuessStatuses(currentGuess)
+    let result = await getGuessStatuses(feathersClient, currentGuess)
 
     try {
       let calldata = await plonk.exportSolidityCallData(

@@ -14,6 +14,7 @@ export const ConnectWalletModal = ({ isOpen, handleClose }: Props) => {
     <BaseModal title="Connect Wallet" isOpen={isOpen} handleClose={handleClose}>
       {connectors.map((connector) => (
         <button
+          className="dark:text-white"
           disabled={!connector.ready}
           key={connector.id}
           onClick={() => connect({ connector })}

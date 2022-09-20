@@ -2,6 +2,7 @@ import { PlonkProof } from './../../../backend/src/utils/proof'
 import { asAsciiArray } from './asAsciiArray'
 import { requestProof } from './../zk/prove'
 import { unicodeSplit } from './words'
+import { Application } from '@feathersjs/feathers'
 
 export type CharStatus = 'absent' | 'present' | 'correct'
 
@@ -30,9 +31,10 @@ export interface StatusesAndProof {
 }
 
 export const getGuessStatuses = async (
+  feathersClient: Application,
   guess: string
 ): Promise<StatusesAndProof> => {
-  return requestProof(asAsciiArray(guess)).then((proof) => {
+  return requestProof(feathersClient, asAsciiArray(guess)).then((proof) => {
     let clue = proof.publicSignals.slice(0, 5).map((ascii) => Number(ascii))
     return {
       statuses: Array.from(

@@ -1,6 +1,4 @@
-import feathers from '@feathersjs/client'
-import rest from '@feathersjs/rest-client'
-import axios from 'axios'
+import { Application } from '@feathersjs/feathers'
 
 interface Proof {
   A: string[]
@@ -29,15 +27,10 @@ export interface PlonkProof {
 }
 
 export const requestProof = async (
+  feathersClient: Application,
   asciiGuess: number[]
 ): Promise<PlonkProof> => {
   console.log(`Guess: ${asciiGuess}`)
-
-  const feathersClient = feathers()
-  //TODO put in a config
-  const restClient = rest('http://localhost:3030')
-
-  feathersClient.configure(restClient.axios(axios))
 
   let result: PlonkProof
   try {
