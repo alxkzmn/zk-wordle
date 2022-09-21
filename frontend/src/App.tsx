@@ -69,8 +69,8 @@ type CommitmentResponse = {
 }
 function App() {
   const feathersClient = feathers()
-  const restClient = rest(process.env.SERVER_URL)
-  console.log('Server URL: ', process.env.SERVER_URL)
+  const restClient = rest(process.env.REACT_APP_SERVER_URL)
+  console.log('Server URL: ', process.env.REACT_APP_SERVER_URL)
 
   feathersClient.configure(restClient.axios(axios))
 

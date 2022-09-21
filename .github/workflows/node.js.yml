@@ -20,7 +20,7 @@ jobs:
           npm ci
           npm run build
         env:
-          SERVER_URL: ${{ secrets.SERVER_URL }}
+          REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
