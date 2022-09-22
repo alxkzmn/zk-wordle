@@ -18,11 +18,11 @@ export default (app: Application): Hook => {
       new ethers.providers.JsonRpcProvider(app.get("rpcUrl"))
     );
   }
-  //The 0th is GuessVerifier, the 1st is StatsVerifier, and the encapsulating ZKWordle is the 2nd one
+  //TODO make compatible with local deployment
   const zkWordleContract = new ethers.Contract(
     process.env.NODE_ENV === "production"
-      ? "0xa47b27728ef69dddc22acc706c2d1810adc72bad"
-      : "0xa47b27728ef69dddc22acc706c2d1810adc72bad",
+      ? "0x92F1E321a090b3d3e85d1c47ab28A8B781522894"
+      : "0x92F1E321a090b3d3e85d1c47ab28A8B781522894",
     contractAbi.abi,
     wallet
   );

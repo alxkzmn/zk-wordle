@@ -1,4 +1,4 @@
 {
-  "host": "ZK-Wordle Backend-app.feathersjs.com",
+  "host": "https://zk-wordle.herokuapp.com",
   "port": "PORT"
 }
