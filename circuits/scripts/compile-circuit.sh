@@ -1,11 +1,11 @@
 #!/bin/bash
 
 cd circuits
-if [ -f ./powers-of-tau/powersOfTau28_hez_final_15.ptau ]; then
-    echo "powersOfTau28_hez_final_15.ptau already exists. Skipping."
+if [ -f ./powers-of-tau/powersOfTau28_hez_final_12.ptau ]; then
+    echo "powersOfTau28_hez_final_12.ptau already exists. Skipping."
 else
-    echo 'Downloading powersOfTau28_hez_final_15.ptau'
-    wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_15.ptau -O ./powers-of-tau/powersOfTau28_hez_final_15.ptau
+    echo 'Downloading powersOfTau28_hez_final_12.ptau'
+    wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_12.ptau -O ./powers-of-tau/powersOfTau28_hez_final_12.ptau
 fi
 
 echo "Compiling circuit.circom..."
@@ -19,7 +19,8 @@ for circuit in `find ./src -type f -name "*.circom" -maxdepth 1`; do
 
     # Create and export the zkey
 
-    snarkjs plonk setup compiled/${name}.r1cs powers-of-tau/powersOfTau28_hez_final_15.ptau compiled/${name}_final.zkey
+    snarkjs groth16 setup compiled/${name}.r1cs powers-of-tau/powersOfTau28_hez_final_12.ptau compiled/${name}_0000.zkey
+    snarkjs zkey contribute compiled/${name}_0000.zkey compiled/${name}_final.zkey --name="1st Contributor Name" -v
     cp compiled/${name}_final.zkey ./../backend/src/zk/${name}_final.zkey
     cd compiled
     snarkjs zkey export verificationkey ${name}_final.zkey ${name}_verification_key.json

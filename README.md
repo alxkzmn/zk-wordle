@@ -8,6 +8,7 @@ Wordle game implemented using the Zero-Knowledge Proofs.
 npm install
 npm run compile
 ```
+You will be asked to provide random entropy text during the circuits compilation.
 
 ## Get local chain up and deploy the contract
 
@@ -25,6 +26,10 @@ forge script script/ZKWordle.s.sol --ffi --rpc-url http://localhost:8545 --priva
 ```
 
 This is an Anvil test account's private key - don't use it in production, everyone else knows it!
+If you are deploying on a public chain, don't forget to verify the contract on Etherscan for other's convenience:
+```bash
+forge script script/ZKWordle.s.sol --ffi --rpc-url <YOUR RPC URL (e.g., Infura)> --private-key <YOUR ETHEREUM PRIVATE KEY> -vvv --broadcast --etherscan-api-key <YOUR ETHERSCAN API KEY> --verify
+```
 
 ## Run the backend
 

@@ -18,7 +18,6 @@ contract ZKWordleScript is Script {
             msg.sender
         );
         vm.stopBroadcast();
-        //FIXME file is not yet ready at this point, copy manually?
         _copyBroadcast();
     }
 

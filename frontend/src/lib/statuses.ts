@@ -1,6 +1,5 @@
-import { PlonkProof } from './../../../backend/src/utils/proof'
 import { asAsciiArray } from './asAsciiArray'
-import { requestProof } from './../zk/prove'
+import { Groth16Proof, requestProof } from './../zk/prove'
 import { unicodeSplit } from './words'
 import { Application } from '@feathersjs/feathers'
 
@@ -27,7 +26,7 @@ export const getStatuses = (
 
 export interface StatusesAndProof {
   statuses: CharStatus[]
-  proof: PlonkProof
+  proof: Groth16Proof
 }
 
 export const getGuessStatuses = async (

@@ -1,7 +1,7 @@
 [profile.default]
 src = 'src'
-out = './../backend/src/blockchain_cache'
+out = './../backend/src/blockchain'
 libs = ['lib']
-broadcast = './../backend/src/blockchain_cache'
+broadcast = './../backend/src/blockchain'
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

@@ -21,8 +21,8 @@ export default (app: Application): Hook => {
   //TODO make compatible with local deployment
   const zkWordleContract = new ethers.Contract(
     process.env.NODE_ENV === "production"
-      ? "0x92F1E321a090b3d3e85d1c47ab28A8B781522894"
-      : "0x92F1E321a090b3d3e85d1c47ab28A8B781522894",
+      ? "0x895D5B2fe495B0AD737B3A9F44C95Ecb70710d07"
+      : "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
     contractAbi.abi,
     wallet
   );

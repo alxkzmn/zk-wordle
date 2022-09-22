@@ -1,7 +1,7 @@
 import { Service, MemoryServiceOptions } from "feathers-memory";
 import { Application } from "../../declarations";
 import { Params } from "@feathersjs/feathers";
-import { plonk } from "snarkjs";
+import { groth16 } from "snarkjs";
 import { solution, solutionIndex } from "../../utils/words";
 import { asAsciiArray } from "../../utils/asAsciiArray";
 import { BigNumber } from "ethers";
@@ -51,7 +51,7 @@ export class Clue extends Service {
       hash: solutionCommitment.toString(),
     };
     console.log("Args:", args);
-    const proof = await plonk.fullProve(
+    const proof = await groth16.fullProve(
       args,
       CIRCUIT_WASM_PATH,
       CIRCUIT_ZKEY_PATH

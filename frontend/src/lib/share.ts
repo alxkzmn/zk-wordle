@@ -1,9 +1,9 @@
-import { PlonkProof } from './../../../backend/src/utils/proof'
 import { CharStatus } from './statuses'
 import { solutionIndex, unicodeSplit } from './words'
 import { GAME_TITLE } from '../constants/strings'
 import { MAX_CHALLENGES } from '../constants/settings'
 import { UAParser } from 'ua-parser-js'
+import { Groth16Proof } from '../zk/prove'
 
 const webShareApiDeviceTypes: string[] = ['mobile', 'smarttv', 'wearable']
 const parser = new UAParser()
@@ -11,7 +11,7 @@ const browser = parser.getBrowser()
 const device = parser.getDevice()
 
 export const shareStatus = (
-  proof: PlonkProof,
+  proof: Groth16Proof,
   guesses: string[],
   statuses: Map<string, CharStatus[]>,
   lost: boolean,

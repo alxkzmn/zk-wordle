@@ -16,7 +16,7 @@ import LoadingSpinner from '../progress/Spinner'
 import { useState } from 'react'
 import { MAX_CHALLENGES } from '../../constants/settings'
 import { asAsciiArray } from '../../lib/asAsciiArray'
-import { PlonkProof } from '../../zk/prove'
+import { Groth16Proof } from '../../zk/prove'
 import { Application } from '@feathersjs/feathers'
 
 type Props = {
@@ -105,7 +105,7 @@ export const StatsModal = ({
                     .create({
                       guesses: asciiGuesses,
                     })
-                    .then((result: PlonkProof) => {
+                    .then((result: Groth16Proof) => {
                       console.log(result)
                       setIsProving(false)
                       shareStatus(
