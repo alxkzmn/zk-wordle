@@ -1,4 +1,5 @@
-import { Params } from "@feathersjs/feathers";
+import { SaltStorage } from "./../salt-storage/salt-storage.class";
+import { Paginated, Params } from "@feathersjs/feathers";
 import { Service, MemoryServiceOptions } from "feathers-memory";
 import { Application } from "../../declarations";
 
@@ -12,29 +13,45 @@ interface SaltResponse {
 }
 
 export class Salt extends Service<SaltResponse> {
-  private saltByRound = new Map<number, number>();
+  private app: Application;
   //eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(options: Partial<MemoryServiceOptions>, app: Application) {
     super(options);
+    this.app = app;
   }
 
-  async get(id: number, params: Params): Promise<SaltResponse> {
-    const saltResponse = {
-      solutionIndex: id,
-      salt: this.saltByRound.get(id) ?? 0,
-    };
-    console.log("Retrieving salt:", saltResponse);
+  async get(id: number, params?: Params): Promise<SaltResponse> {
+    console.log("Retrieving salt from DB");
+    const dbSalt = (await this.app.service("salt-storage").find({
+      query: {
+        solutionIndex: id,
+      },
+    })) as Paginated<any>;
+    const saltResponse = dbSalt ? dbSalt.data[0] : undefined;
+    console.log("Retrieved salt:", saltResponse);
     return Promise.resolve(saltResponse);
   }
   async create(data: SaltRequest, params: Params): Promise<SaltResponse> {
-    const salt = Math.random() * 1e18;
-    this.saltByRound.set(data.solutionIndex, salt);
-    console.log(
-      `Set new salt ${salt} for the solution index ${data.solutionIndex}`
-    );
-    return Promise.resolve({
-      solutionIndex: data.solutionIndex,
-      salt: salt,
-    });
+    let saltResponse = await this.get(data.solutionIndex);
+    if (!saltResponse) {
+      const salt = Math.random() * 1e18;
+      console.log(
+        `Set new salt ${salt} for the solution index ${data.solutionIndex}`
+      );
+      saltResponse = {
+        solutionIndex: data.solutionIndex,
+        salt: salt,
+      };
+      console.log("Writing salt to DB");
+      this.app
+        .service("salt-storage")
+        ?.create(saltResponse)
+        .then((message) => console.log("Created salt", message));
+    } else {
+      console.log(
+        `Fetched salt ${saltResponse.salt} for the solution index ${data.solutionIndex} from DB`
+      );
+    }
+    return Promise.resolve(saltResponse);
   }
 }
