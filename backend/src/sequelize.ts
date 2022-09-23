@@ -10,6 +10,7 @@ export default function (app: Application): void {
     define: {
       freezeTableName: true,
     },
+    ssl: true,
   });
   const oldSetup = app.setup;
 
