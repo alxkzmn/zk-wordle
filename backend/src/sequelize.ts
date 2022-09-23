@@ -6,6 +6,12 @@ export default function (app: Application): void {
   console.log("Connection string:", connectionString);
   const sequelize = new Sequelize(connectionString, {
     dialect: "postgres",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
     logging: console.log,
     define: {
       freezeTableName: true,
