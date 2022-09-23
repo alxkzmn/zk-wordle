@@ -19,14 +19,19 @@ export class Salt extends Service<SaltResponse> {
   }
 
   async get(id: number, params: Params): Promise<SaltResponse> {
-    return Promise.resolve({
+    const saltResponse = {
       solutionIndex: id,
       salt: this.saltByRound.get(id) ?? 0,
-    });
+    };
+    console.log("Retrieving salt:", saltResponse);
+    return Promise.resolve(saltResponse);
   }
   async create(data: SaltRequest, params: Params): Promise<SaltResponse> {
     const salt = Math.random() * 1e18;
     this.saltByRound.set(data.solutionIndex, salt);
+    console.log(
+      `Set new salt ${salt} for the solution index ${data.solutionIndex}`
+    );
     return Promise.resolve({
       solutionIndex: data.solutionIndex,
       salt: salt,

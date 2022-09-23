@@ -70,7 +70,6 @@ type CommitmentResponse = {
 function App() {
   const feathersClient = feathers()
   const restClient = rest(process.env.REACT_APP_SERVER_URL)
-  console.log('Server URL: ', process.env.REACT_APP_SERVER_URL)
 
   feathersClient.configure(restClient.axios(axios))
 
@@ -81,6 +80,7 @@ function App() {
     useAlert()
   const [currentGuess, setCurrentGuess] = useState('')
   const [isGameWon, setIsGameWon] = useState(false)
+  const [creatingCommitment, setIsCreatingCommitment] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
@@ -145,21 +145,20 @@ function App() {
   const contract = useContract({
     addressOrName:
       process.env.NODE_ENV === 'production'
-        ? '0x895D5B2fe495B0AD737B3A9F44C95Ecb70710d07'
+        ? '0x1adeff73be131a68fdea106bb1298370059fdf00'
         : '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0',
     contractInterface: contractAbi.abi,
     signerOrProvider: signer,
   })
 
   useEffect(() => {
-    if (signer) {
+    if (signer && !creatingCommitment) {
+      setIsCreatingCommitment(true)
       try {
-        console.log('Getting commitment')
-        console.log(contract)
-        contract.solutionCommitment(solutionIndex).then((res: any) => {
-          console.log(res)
-          if (res.isZero()) {
-            console.log('Commitment not found')
+        console.log('Getting commitment...')
+        contract.solutionCommitment(solutionIndex).then((commitment: any) => {
+          if (commitment.isZero()) {
+            console.log(`Commitment for solution #${solutionIndex} not found`)
             feathersClient
               .service('commitment')
               .create({})
@@ -172,23 +171,26 @@ function App() {
                   contract
                     .commitSolution(solutionIndex, hashedSolution, signature)
                     .then((tx: any) => {
-                      tx.wait().then((res: any) => {
-                        if (res.status) {
-                          console.log('commitment successfully created')
+                      tx.wait().then((commitment: any) => {
+                        if (commitment.status) {
+                          console.log('Commitment successfully created')
+                        } else {
+                          setIsCreatingCommitment(false)
                         }
                       })
                     })
                 }
               )
           } else {
-            console.log('Commitment found, proceeding')
+            console.log(`Commitment found: ${commitment}, proceeding`)
           }
         })
       } catch (e) {
+        setIsCreatingCommitment(false)
         throw Error(e as any)
       }
     }
-  }, [contract, feathersClient, signer])
+  }, [contract, creatingCommitment, feathersClient, signer])
 
   useEffect(() => {
     // if no game state on load,

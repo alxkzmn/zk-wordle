@@ -56,7 +56,7 @@ export class Stats extends Service {
       CIRCUIT_WASM_PATH,
       CIRCUIT_ZKEY_PATH
     );
-    console.log(`Proof generated`);
+    console.log(`Stats proof generated`);
     console.log(proof);
 
     return super.create(proof, params);
