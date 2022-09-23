@@ -7,9 +7,16 @@ type Props = {
   children: React.ReactNode
   isOpen: boolean
   handleClose: () => void
+  isCloseable?: boolean
 }
 
-export const BaseModal = ({ title, children, isOpen, handleClose }: Props) => {
+export const BaseModal = ({
+  title,
+  children,
+  isOpen,
+  handleClose,
+  isCloseable = true,
+}: Props) => {
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog
@@ -48,10 +55,12 @@ export const BaseModal = ({ title, children, isOpen, handleClose }: Props) => {
           >
             <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6 dark:bg-gray-800">
               <div className="absolute right-4 top-4">
-                <XCircleIcon
-                  className="h-6 w-6 cursor-pointer dark:stroke-white"
-                  onClick={() => handleClose()}
-                />
+                {isCloseable && (
+                  <XCircleIcon
+                    className="h-6 w-6 cursor-pointer dark:stroke-white"
+                    onClick={() => handleClose()}
+                  />
+                )}
               </div>
               <div>
                 <div className="text-center">

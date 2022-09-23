@@ -11,10 +11,19 @@ export const ConnectWalletModal = ({ isOpen, handleClose }: Props) => {
     useConnect()
 
   return (
-    <BaseModal title="Connect Wallet" isOpen={isOpen} handleClose={handleClose}>
+    <BaseModal
+      title="Connect Wallet"
+      isOpen={isOpen}
+      handleClose={handleClose}
+      isCloseable={false}
+    >
+      <div className="dark:text-white">
+        Please connect to blockchain to play ZK-Wordle
+      </div>
       {connectors.map((connector) => (
         <button
-          className="dark:text-white"
+          type="button"
+          className="mt-2 w-full rounded-md border shadow-sm px-4 py-2 text-base font-medium dark:text-white hover:ring-indigo-500 hover:outline-none hover:ring-2 hover:ring-offset-2 sm:text-sm"
           disabled={!connector.ready}
           key={connector.id}
           onClick={() => connect({ connector })}

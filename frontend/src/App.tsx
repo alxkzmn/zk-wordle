@@ -5,7 +5,7 @@ import { InfoModal } from './components/modals/InfoModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { SettingsModal } from './components/modals/SettingsModal'
 import { solutionIndex, tomorrow } from './lib/words'
-import { useContract, useSigner } from 'wagmi'
+import { useContract, useSigner, useSwitchNetwork } from 'wagmi'
 import { groth16 } from 'snarkjs'
 import contractAbi from './contracts/ZKWordle.sol/ZKWordle.json'
 
@@ -79,6 +79,8 @@ function App() {
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
   const [currentGuess, setCurrentGuess] = useState('')
+  const [isOnCorrectNetwork, setIsOnCorrectNetwork] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
   const [isGameWon, setIsGameWon] = useState(false)
   const [creatingCommitment, setIsCreatingCommitment] = useState(false)
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
@@ -141,6 +143,32 @@ function App() {
       : false
   )
   const { data: signer } = useSigner()
+  const { switchNetwork } = useSwitchNetwork({
+    onSuccess(data) {
+      if (data.id === (process.env.NODE_ENV === 'production' ? 5 : 31337))
+        setIsOnCorrectNetwork(true)
+    },
+  })
+
+  useEffect(() => {
+    if (!isOnCorrectNetwork) {
+      signer?.getChainId().then((chainId) => {
+        //If the wallet is not connected to Goerli testnet
+        if (chainId !== (process.env.NODE_ENV === 'production' ? 5 : 31337)) {
+          //Ask user to switch to Goerli testnet
+          switchNetwork?.(process.env.NODE_ENV === 'production' ? 5 : 31337)
+        } else {
+          setIsOnCorrectNetwork(true)
+        }
+      })
+    }
+  }, [isOnCorrectNetwork, signer, switchNetwork])
+
+  useEffect(() => {
+    if (signer && isOnCorrectNetwork) {
+      setIsConnected(true)
+    }
+  }, [isOnCorrectNetwork, signer])
   //TODO make compatible with local deployment
   const contract = useContract({
     addressOrName:
@@ -152,7 +180,7 @@ function App() {
   })
 
   useEffect(() => {
-    if (signer && !creatingCommitment) {
+    if (isConnected && !creatingCommitment) {
       setIsCreatingCommitment(true)
       try {
         console.log('Getting commitment...')
@@ -190,17 +218,17 @@ function App() {
         throw Error(e as any)
       }
     }
-  }, [contract, creatingCommitment, feathersClient, signer])
+  }, [contract, creatingCommitment, feathersClient, isConnected])
 
   useEffect(() => {
     // if no game state on load,
     // show the user the how-to info modal
-    if (!loadGameStateFromLocalStorage()) {
+    if (isConnected && !loadGameStateFromLocalStorage()) {
       setTimeout(() => {
         setIsInfoModalOpen(true)
       }, WELCOME_INFO_MODAL_MS)
     }
-  }, [])
+  }, [isConnected])
 
   useEffect(() => {
     if (isDarkMode) {
@@ -240,11 +268,12 @@ function App() {
   }
 
   useEffect(() => {
-    saveGameStateToLocalStorage({ guesses, statuses, tomorrow })
-  }, [guesses, statuses])
+    if (isConnected)
+      saveGameStateToLocalStorage({ guesses, statuses, tomorrow })
+  }, [guesses, isConnected, statuses])
 
   useEffect(() => {
-    if (isGameWon) {
+    if (isConnected && isGameWon) {
       const winMessage =
         WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)]
       const delayMs = REVEAL_TIME_MS * MAX_WORD_LENGTH
@@ -255,12 +284,12 @@ function App() {
       })
     }
 
-    if (isGameLost) {
+    if (isConnected && isGameLost) {
       setTimeout(() => {
         setIsStatsModalOpen(true)
       }, GAME_LOST_INFO_DELAY)
     }
-  }, [isGameWon, isGameLost, showSuccessAlert])
+  }, [isGameWon, isGameLost, showSuccessAlert, isConnected])
 
   const onChar = (value: string) => {
     if (

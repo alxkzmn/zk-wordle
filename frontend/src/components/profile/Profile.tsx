@@ -49,7 +49,9 @@ export function Profile() {
       )}
       <ConnectWalletModal
         isOpen={isConnectionModalOpen}
-        handleClose={() => setConnectionModalOpen(false)}
+        handleClose={() => {
+          if (isConnected) setConnectionModalOpen(false)
+        }}
       />
     </div>
   )
