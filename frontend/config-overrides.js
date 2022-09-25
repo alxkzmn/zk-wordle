@@ -12,6 +12,7 @@ module.exports = function override(config) {
     url: require.resolve('url'),
     fs: require.resolve('browserify-fs'),
     path: require.resolve('path-browserify'),
+    constants: false,
   })
   config.resolve.fallback = fallback
   config.plugins = (config.plugins || []).concat([

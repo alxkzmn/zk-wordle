@@ -1,6 +1,5 @@
 // Initializes the `clue` service on path `/clue`
 import { ServiceAddons } from "@feathersjs/feathers";
-import { ethers } from "ethers";
 import { Application } from "../../declarations";
 import { Clue } from "./clue.class";
 import hooks from "./clue.hooks";

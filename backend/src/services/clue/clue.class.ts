@@ -15,7 +15,7 @@ interface Guess {
 
 export class Clue extends Service {
   private app: Application;
-  private salt: number | undefined;
+  private salt: bigint | undefined;
   //eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(options: Partial<MemoryServiceOptions>, app: Application) {
     super(options);
@@ -51,14 +51,20 @@ export class Clue extends Service {
       hash: solutionCommitment.toString(),
     };
     console.log("Args:", args);
-    const proof = await groth16.fullProve(
-      args,
-      CIRCUIT_WASM_PATH,
-      CIRCUIT_ZKEY_PATH
-    );
+    let proof;
+    try {
+      proof = await groth16.fullProve(
+        args,
+        CIRCUIT_WASM_PATH,
+        CIRCUIT_ZKEY_PATH
+      );
+    } catch (e: any) {
+      console.log(e);
+      throw new Error("Could not generate proof");
+    }
     console.log("Clue proof generated");
     console.log(proof);
 
-    return super.create(proof, params);
+    return Promise.resolve(proof);
   }
 }

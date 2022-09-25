@@ -28,10 +28,10 @@ export class Stats extends Service {
     console.log("Solution index:", solutionIndex);
 
     //Poseidon hash is a BigInt
-    let solutionCommitment = BigNumber.from(
+    const solutionCommitment = BigNumber.from(
       await params?.zkWordleContract?.solutionCommitment(solutionIndex)
     );
-    let asciiSolution = asAsciiArray(solution);
+    const asciiSolution = asAsciiArray(solution);
     //If the mapping in a smart contract returns zero, it means that either the day has changed and the solution index is different,
     //or the game hasn't yet started
     if (solutionCommitment.isZero()) {
@@ -42,7 +42,7 @@ export class Stats extends Service {
       console.log("Solution commitment found: ", solutionCommitment.toString());
     }
 
-    let salt = (await this.app.service("salt").get(solutionIndex, {})).salt;
+    const salt = (await this.app.service("salt").get(solutionIndex, {})).salt;
 
     const args = {
       solution: asciiSolution,
@@ -51,12 +51,12 @@ export class Stats extends Service {
       hash: solutionCommitment.toString(),
     };
     console.log("Args:", args);
-    let proof = await groth16.fullProve(
+    const proof = await groth16.fullProve(
       args,
       CIRCUIT_WASM_PATH,
       CIRCUIT_ZKEY_PATH
     );
-    console.log(`Stats proof generated`);
+    console.log("Stats proof generated");
     console.log(proof);
 
     return super.create(proof, params);

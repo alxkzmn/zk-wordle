@@ -7,7 +7,7 @@ export default function (app: Application): void {
   const sequelize = new Sequelize(connectionString, {
     dialect: "postgres",
     dialectOptions: {
-      ssl: {
+      ssl: process.env.NODE_ENV === "production" && {
         require: true,
         rejectUnauthorized: false,
       },
@@ -16,7 +16,7 @@ export default function (app: Application): void {
     define: {
       freezeTableName: true,
     },
-    ssl: true,
+    ssl: process.env.NODE_ENV === "production",
   });
   const oldSetup = app.setup;
 

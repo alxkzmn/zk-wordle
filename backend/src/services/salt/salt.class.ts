@@ -1,4 +1,3 @@
-import { SaltStorage } from "./../salt-storage/salt-storage.class";
 import { Paginated, Params } from "@feathersjs/feathers";
 import { Service, MemoryServiceOptions } from "feathers-memory";
 import { Application } from "../../declarations";
@@ -9,7 +8,7 @@ interface SaltRequest {
 
 interface SaltResponse {
   solutionIndex: number;
-  salt: number;
+  salt: bigint;
 }
 
 export class Salt extends Service<SaltResponse> {
@@ -40,7 +39,7 @@ export class Salt extends Service<SaltResponse> {
       );
       saltResponse = {
         solutionIndex: data.solutionIndex,
-        salt: salt,
+        salt: BigInt(salt),
       };
       console.log("Writing salt to DB");
       this.app

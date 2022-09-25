@@ -1,9 +1,9 @@
 export const asAsciiArray = (word: string) => {
-  let wordAsAscii: number[] = []
+  const wordAsAscii: number[] = [];
   for (let i = 0; i < word.length; i++) {
-    let code = word.charCodeAt(i)
-    wordAsAscii.push(code)
+    const code = word.charCodeAt(i);
+    wordAsAscii.push(code);
   }
 
-  return wordAsAscii
-}
+  return wordAsAscii;
+};
