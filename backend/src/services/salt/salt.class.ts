@@ -30,6 +30,7 @@ export class Salt extends Service<SaltResponse> {
     console.log("Retrieved salt:", saltResponse);
     return Promise.resolve(saltResponse);
   }
+
   async create(data: SaltRequest, params: Params): Promise<SaltResponse> {
     let saltResponse = await this.get(data.solutionIndex);
     if (!saltResponse) {

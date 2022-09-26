@@ -3,7 +3,6 @@ import { StatBar } from '../stats/StatBar'
 import { Histogram } from '../stats/Histogram'
 import { GameStats } from '../../lib/localStorage'
 import { shareStatus } from '../../lib/share'
-import { tomorrow } from '../../lib/words'
 import { BaseModal } from './BaseModal'
 import {
   STATISTICS_TITLE,
@@ -32,6 +31,8 @@ type Props = {
   isDarkMode: boolean
   isHighContrastMode: boolean
   numberOfGuessesMade: number
+  solutionIndex: number
+  tomorrow: number
   feathersClient: Application
 }
 
@@ -48,6 +49,8 @@ export const StatsModal = ({
   isDarkMode,
   isHighContrastMode,
   numberOfGuessesMade,
+  solutionIndex,
+  tomorrow,
   feathersClient,
 }: Props) => {
   const [isProving, setIsProving] = useState(false)
@@ -109,6 +112,7 @@ export const StatsModal = ({
                       console.log(result)
                       setIsProving(false)
                       shareStatus(
+                        solutionIndex,
                         result,
                         guesses,
                         statuses,

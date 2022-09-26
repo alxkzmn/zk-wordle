@@ -4,7 +4,6 @@ import { Keyboard } from './components/keyboard/Keyboard'
 import { InfoModal } from './components/modals/InfoModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { SettingsModal } from './components/modals/SettingsModal'
-import { solutionIndex, tomorrow } from './lib/words'
 import { useContract, useSigner, useSwitchNetwork } from 'wagmi'
 import { groth16 } from 'snarkjs'
 import contractAbi from './contracts/ZKWordle.sol/ZKWordle.json'
@@ -67,6 +66,10 @@ type CommitmentResponse = {
   hashedSolution: BigNumber
   signature: string
 }
+type GameRoundResponse = {
+  solutionIndex: number
+  tomorrow: number
+}
 function App() {
   const feathersClient = feathers()
   const restClient = rest(process.env.REACT_APP_SERVER_URL)
@@ -78,6 +81,8 @@ function App() {
   ).matches
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert()
+  const [solutionIndex, setSolutionIndex] = useState(0)
+  const [tomorrow, setTomorrow] = useState(0)
   const [currentGuess, setCurrentGuess] = useState('')
   const [isOnCorrectNetwork, setIsOnCorrectNetwork] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
@@ -108,7 +113,12 @@ function App() {
     loaded.guesses
       .map((guess) => loaded.statuses.get(guess))
       .forEach((status) => {
-        if (!status?.includes('absent') && !status?.includes('present'))
+        console.log('Status:', status)
+        if (
+          status &&
+          !status?.includes('absent') &&
+          !status?.includes('present')
+        )
           gameWon = true
       })
     if (gameWon) {
@@ -121,8 +131,10 @@ function App() {
 
   const [statuses, setStatuses] = useState<Map<string, CharStatus[]>>(() => {
     const loaded = loadGameStateFromLocalStorage()
-    //TODO: detect solution commitment change
-    if (!loaded?.statuses || Date.now() > loaded.tomorrow) {
+    if (
+      !loaded?.statuses ||
+      (solutionIndex > 0 && solutionIndex !== loaded?.solutionIndex)
+    ) {
       return new Map()
     }
     return loaded!.statuses
@@ -180,7 +192,16 @@ function App() {
   })
 
   useEffect(() => {
-    if (isConnected && !creatingCommitment) {
+    feathersClient
+      .service('game-round')
+      .find()
+      .then(({ solutionIndex, tomorrow }: GameRoundResponse) => {
+        setSolutionIndex(solutionIndex)
+        setTomorrow(tomorrow)
+      })
+  })
+  useEffect(() => {
+    if (isConnected && !creatingCommitment && solutionIndex !== 0) {
       setIsCreatingCommitment(true)
       try {
         console.log('Getting commitment...')
@@ -218,7 +239,7 @@ function App() {
         throw Error(e as any)
       }
     }
-  }, [contract, creatingCommitment, feathersClient, isConnected])
+  }, [contract, creatingCommitment, feathersClient, isConnected, solutionIndex])
 
   useEffect(() => {
     // if no game state on load,
@@ -269,8 +290,8 @@ function App() {
 
   useEffect(() => {
     if (isConnected)
-      saveGameStateToLocalStorage({ guesses, statuses, tomorrow })
-  }, [guesses, isConnected, statuses])
+      saveGameStateToLocalStorage({ guesses, statuses, solutionIndex })
+  }, [guesses, isConnected, solutionIndex, statuses])
 
   useEffect(() => {
     if (isConnected && isGameWon) {
@@ -524,6 +545,8 @@ function App() {
           isHighContrastMode={isHighContrastMode}
           numberOfGuessesMade={guesses.length}
           feathersClient={feathersClient}
+          solutionIndex={solutionIndex}
+          tomorrow={tomorrow}
         />
         <SettingsModal
           isOpen={isSettingsModalOpen}
