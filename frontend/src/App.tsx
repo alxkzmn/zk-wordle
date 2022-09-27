@@ -184,7 +184,7 @@ function App() {
   const contract = useContract({
     addressOrName:
       process.env.NODE_ENV === 'production'
-        ? '0x1adeff73be131a68fdea106bb1298370059fdf00'
+        ? '0xb44d12c7c2a4af26703fc39cb10b9fc0785e5de6'
         : '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0',
     contractInterface: contractAbi.abi,
     signerOrProvider: signer,
