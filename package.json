@@ -8,7 +8,6 @@
   "dependencies": {
     "circomlib": "^2.0.5"
   },
-  "devDependencies": {},
   "scripts": {
     "compile": ". circuits/scripts/compile-circuit.sh && node ./circuits/scripts/rename-verifiers.js"
   },

@@ -113,7 +113,6 @@ function App() {
     loaded.guesses
       .map((guess) => loaded.statuses.get(guess))
       .forEach((status) => {
-        console.log('Status:', status)
         if (
           status &&
           !status?.includes('absent') &&
@@ -196,6 +195,11 @@ function App() {
       .service('game-round')
       .find()
       .then(({ solutionIndex, tomorrow }: GameRoundResponse) => {
+        const loaded = loadGameStateFromLocalStorage()
+        if (solutionIndex !== loaded?.solutionIndex) {
+          setGuesses([])
+          setStatuses(new Map())
+        }
         setSolutionIndex(solutionIndex)
         setTomorrow(tomorrow)
       })
@@ -236,7 +240,7 @@ function App() {
         })
       } catch (e) {
         setIsCreatingCommitment(false)
-        throw Error(e as any)
+        console.log(e)
       }
     }
   }, [contract, creatingCommitment, feathersClient, isConnected, solutionIndex])
@@ -331,6 +335,11 @@ function App() {
   const onEnter = async () => {
     if (isGameWon || isGameLost) {
       return
+    }
+
+    if (!creatingCommitment) {
+      setCurrentRowClass('jiggle')
+      return showErrorAlert('Commitment not created, cannot verify proofs', {})
     }
 
     if (!(unicodeLength(currentGuess) === MAX_WORD_LENGTH)) {
@@ -448,31 +457,33 @@ function App() {
       return
     }
     let proofString = pasted.substring(proofStartIndex)
-    try {
-      let proof = JSON.parse(proofString) as Groth16Proof
-      let calldata = await groth16.exportSolidityCallData(
-        utils.unstringifyBigInts(proof.proof),
-        utils.unstringifyBigInts(proof.publicSignals)
-      )
-      const argv = calldata
-        .replace(/["[\]\s]/g, '')
-        .split(',')
-        .map((x: any) => BigInt(x).toString())
-      const a = [argv[0], argv[1]]
-      const b = [
-        [argv[2], argv[3]],
-        [argv[4], argv[5]],
-      ]
-      const c = [argv[6], argv[7]]
-      const Input = argv.slice(8)
 
-      setStatsVerificationStatus('proving')
+    let proof = JSON.parse(proofString) as Groth16Proof
+    let calldata = await groth16.exportSolidityCallData(
+      utils.unstringifyBigInts(proof.proof),
+      utils.unstringifyBigInts(proof.publicSignals)
+    )
+    const argv = calldata
+      .replace(/["[\]\s]/g, '')
+      .split(',')
+      .map((x: any) => BigInt(x).toString())
+    const a = [argv[0], argv[1]]
+    const b = [
+      [argv[2], argv[3]],
+      [argv[4], argv[5]],
+    ]
+    const c = [argv[6], argv[7]]
+    const Input = argv.slice(8)
+
+    setStatsVerificationStatus('proving')
+    try {
       let result = await contract.verifyStats(a, b, c, Input)
       setIsStatsValid(result)
       setStatsVerificationStatus('proven')
     } catch (e) {
       console.log(e)
-      showErrorAlert(INCORRECT_PROOF_TEXT)
+      setIsStatsValid(false)
+      setStatsVerificationStatus('missing')
     }
   }
 
