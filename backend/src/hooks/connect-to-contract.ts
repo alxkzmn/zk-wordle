@@ -22,7 +22,7 @@ export default (app: Application): Hook => {
   const zkWordleContract = new ethers.Contract(
     process.env.NODE_ENV === "production"
       ? "0xD2936b30A608F63C925bF19f3da44EC8fA4C6170"
-      : "0x0165878a594ca255338adfa4d48449f69242eb8f",
+      : "0x610178da211fef7d417bc0e6fed39f05609ad788",
     contractAbi.abi,
     wallet
   );

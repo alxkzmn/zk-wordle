@@ -21,7 +21,7 @@ interface Proof {
   curve: string
 }
 
-export interface Groth16Proof {
+export interface PlonkProof {
   proof: Proof
   publicSignals: string[]
 }
@@ -29,10 +29,10 @@ export interface Groth16Proof {
 export const requestProof = async (
   feathersClient: Application,
   asciiGuess: number[]
-): Promise<Groth16Proof> => {
+): Promise<PlonkProof> => {
   console.log(`Guess: ${asciiGuess}`)
 
-  let result: Groth16Proof
+  let result: PlonkProof
   try {
     result = await feathersClient.service('clue').create({ guess: asciiGuess })
     console.log(result)

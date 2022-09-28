@@ -19,7 +19,7 @@ interface Proof {
   curve: string;
 }
 
-export interface Groth16Proof {
+export interface PlonkProof {
   proof: Proof;
   publicSignals: string[];
 }

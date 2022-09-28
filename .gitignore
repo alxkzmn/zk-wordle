@@ -12,3 +12,4 @@ frontend/.env
 circuits/cache
 backend/src/blockchain
 !backend/src/blockchain/ZKWordle.sol/ZKWordle.json
+backend/src/zk/check_stats_final.zkey

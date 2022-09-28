@@ -3,22 +3,11 @@ pragma solidity ^0.8.13;
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 
-interface IGuessVerifier {
-    function verifyProof(
-        uint256[2] memory a,
-        uint256[2][2] memory b,
-        uint256[2] memory c,
-        uint256[11] memory input
-    ) external view returns (bool);
-}
-
-interface IStatsVerifier {
-    function verifyProof(
-        uint256[2] memory a,
-        uint256[2][2] memory b,
-        uint256[2] memory c,
-        uint256[31] memory input
-    ) external view returns (bool);
+interface PlonlkVerifier {
+    function verifyProof(bytes memory proof, uint256[] memory pubSignals)
+        external
+        view
+        returns (bool);
 }
 
 contract ZKWordle is Ownable {
@@ -26,16 +15,16 @@ contract ZKWordle is Ownable {
 
     address signer = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     mapping(uint256 => uint256) public solutionCommitment;
-    IGuessVerifier guessVerifier;
-    IStatsVerifier statsVerifier;
+    PlonlkVerifier guessVerifier;
+    PlonlkVerifier statsVerifier;
 
     constructor(
         address _guessVerifier,
         address _statsVerifier,
         address _signer
     ) {
-        guessVerifier = IGuessVerifier(_guessVerifier);
-        statsVerifier = IStatsVerifier(_statsVerifier);
+        guessVerifier = PlonlkVerifier(_guessVerifier);
+        statsVerifier = PlonlkVerifier(_statsVerifier);
         signer = _signer;
     }
 
@@ -60,22 +49,20 @@ contract ZKWordle is Ownable {
         solutionCommitment[_solutionIndex] = _solutionCommitment;
     }
 
-    function verifyClues(
-        uint256[2] memory a,
-        uint256[2][2] memory b,
-        uint256[2] memory c,
-        uint256[11] memory input
-    ) public view returns (bool) {
-        return guessVerifier.verifyProof(a, b, c, input);
+    function verifyClues(bytes memory proof, uint256[] memory pubSignals)
+        public
+        view
+        returns (bool)
+    {
+        return guessVerifier.verifyProof(proof, pubSignals);
     }
 
-    function verifyStats(
-        uint256[2] memory a,
-        uint256[2][2] memory b,
-        uint256[2] memory c,
-        uint256[31] memory input
-    ) public view returns (bool) {
-        return statsVerifier.verifyProof(a, b, c, input);
+    function verifyStats(bytes memory proof, uint256[] memory pubSignals)
+        public
+        view
+        returns (bool)
+    {
+        return statsVerifier.verifyProof(proof, pubSignals);
     }
 
     function setSigner(address _newSigner) external onlyOwner {

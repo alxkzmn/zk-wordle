@@ -1,7 +1,7 @@
 import { Service, MemoryServiceOptions } from "feathers-memory";
 import { Application } from "../../declarations";
 import { Params } from "@feathersjs/feathers";
-import { groth16 } from "snarkjs";
+import { plonk } from "snarkjs";
 import { solution, solutionIndex } from "../../utils/words";
 import { asAsciiArray } from "../../utils/asAsciiArray";
 import { BigNumber } from "ethers";
@@ -53,11 +53,7 @@ export class Clue extends Service {
     console.log("Args:", args);
     let proof;
     try {
-      proof = await groth16.fullProve(
-        args,
-        CIRCUIT_WASM_PATH,
-        CIRCUIT_ZKEY_PATH
-      );
+      proof = await plonk.fullProve(args, CIRCUIT_WASM_PATH, CIRCUIT_ZKEY_PATH);
     } catch (e: any) {
       console.log(e);
       throw new Error("Could not generate proof");

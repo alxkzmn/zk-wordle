@@ -3,7 +3,7 @@ import { unicodeSplit } from './words'
 import { GAME_TITLE } from '../constants/strings'
 import { MAX_CHALLENGES } from '../constants/settings'
 import { UAParser } from 'ua-parser-js'
-import { Groth16Proof } from '../zk/prove'
+import { PlonkProof } from '../zk/prove'
 
 const webShareApiDeviceTypes: string[] = ['mobile', 'smarttv', 'wearable']
 const parser = new UAParser()
@@ -12,7 +12,7 @@ const device = parser.getDevice()
 
 export const shareStatus = (
   solutionIndex: number,
-  proof: Groth16Proof,
+  proof: PlonkProof,
   guesses: string[],
   statuses: Map<string, CharStatus[]>,
   lost: boolean,

@@ -5,7 +5,7 @@ import { InfoModal } from './components/modals/InfoModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { SettingsModal } from './components/modals/SettingsModal'
 import { useContract, useSigner, useSwitchNetwork } from 'wagmi'
-import { groth16 } from 'snarkjs'
+import { plonk } from 'snarkjs'
 import contractAbi from './contracts/ZKWordle.sol/ZKWordle.json'
 
 import {
@@ -49,7 +49,7 @@ import { AlertContainer } from './components/alerts/AlertContainer'
 import { useAlert } from './context/AlertContext'
 import { Navbar } from './components/navbar/Navbar'
 import { CharStatus, getGuessStatuses } from './lib/statuses'
-import { Groth16Proof } from './zk/prove'
+import { PlonkProof } from './zk/prove'
 import { utils } from 'ffjavascript'
 import LoadingSpinner from './components/progress/Spinner'
 import {
@@ -185,7 +185,7 @@ function App() {
     addressOrName:
       process.env.NODE_ENV === 'production'
         ? '0xD2936b30A608F63C925bF19f3da44EC8fA4C6170'
-        : '0x0165878a594ca255338adfa4d48449f69242eb8f',
+        : '0x610178da211fef7d417bc0e6fed39f05609ad788',
     contractInterface: contractAbi.abi,
     signerOrProvider: signer,
   })
@@ -379,26 +379,18 @@ function App() {
     let result = await getGuessStatuses(feathersClient, currentGuess)
 
     try {
-      let calldata = await groth16.exportSolidityCallData(
+      let calldata = await plonk.exportSolidityCallData(
         utils.unstringifyBigInts(result.proof.proof),
         utils.unstringifyBigInts(result.proof.publicSignals)
       )
-      const argv = calldata
-        .replace(/["[\]\s]/g, '')
-        .split(',')
-        .map((x: any) => BigInt(x).toString())
-      const a = [argv[0], argv[1]]
-      const b = [
-        [argv[2], argv[3]],
-        [argv[4], argv[5]],
-      ]
-      const c = [argv[6], argv[7]]
-      const Input = argv.slice(8)
-
-      contract.verifyClues(a, b, c, Input).then((verificationResult: any) => {
-        guessesProven.set(currentGuess, verificationResult)
-        setGuessProven(new Map(guessesProven))
-      })
+      const argv = calldata.split(',')
+      console.log(argv[0], result.proof.publicSignals)
+      contract
+        .verifyClues(argv[0], result.proof.publicSignals)
+        .then((verificationResult: any) => {
+          guessesProven.set(currentGuess, verificationResult)
+          setGuessProven(new Map(guessesProven))
+        })
     } catch (e) {
       console.log(e)
     }
@@ -459,26 +451,21 @@ function App() {
     }
     let proofString = pasted.substring(proofStartIndex)
 
-    let proof = JSON.parse(proofString) as Groth16Proof
-    let calldata = await groth16.exportSolidityCallData(
+    let proof = JSON.parse(proofString) as PlonkProof
+    let calldata = await plonk.exportSolidityCallData(
       utils.unstringifyBigInts(proof.proof),
       utils.unstringifyBigInts(proof.publicSignals)
     )
-    const argv = calldata
-      .replace(/["[\]\s]/g, '')
-      .split(',')
-      .map((x: any) => BigInt(x).toString())
-    const a = [argv[0], argv[1]]
-    const b = [
-      [argv[2], argv[3]],
-      [argv[4], argv[5]],
-    ]
-    const c = [argv[6], argv[7]]
-    const Input = argv.slice(8)
+    const argv = calldata.split(',')
 
     setStatsVerificationStatus('proving')
     try {
-      let result = await contract.verifyStats(a, b, c, Input)
+      console.log(argv[0], proof.publicSignals)
+      const start = performance.now()
+      let result = await contract.verifyStats(argv[0], proof.publicSignals)
+      console.log(
+        `Verification took ${(performance.now() - start).toFixed(3)}ms`
+      )
       setIsStatsValid(result)
       setStatsVerificationStatus('proven')
     } catch (e) {

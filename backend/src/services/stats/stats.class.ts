@@ -4,7 +4,7 @@ import { solution, solutionIndex } from "../../utils/words";
 import { Params } from "@feathersjs/feathers";
 import { BigNumber } from "ethers";
 import { asAsciiArray } from "../../utils/asAsciiArray";
-import { groth16 } from "snarkjs";
+import { plonk } from "snarkjs";
 
 const CIRCUIT_WASM_PATH = "src/zk/check_stats.wasm";
 const CIRCUIT_ZKEY_PATH = "src/zk/check_stats_final.zkey";
@@ -51,11 +51,13 @@ export class Stats extends Service {
       commitment: solutionCommitment.toString(),
     };
     console.log("Args:", args);
-    const proof = await groth16.fullProve(
+    const start = performance.now();
+    const proof = await plonk.fullProve(
       args,
       CIRCUIT_WASM_PATH,
       CIRCUIT_ZKEY_PATH
     );
+    console.log(`Proof took ${(performance.now() - start).toFixed(3)}ms`);
     console.log("Stats proof generated");
     console.log(proof);
 
