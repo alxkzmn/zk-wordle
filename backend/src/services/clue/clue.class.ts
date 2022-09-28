@@ -48,7 +48,7 @@ export class Clue extends Service {
       solution: asciiSolution,
       salt: this.salt,
       guess: guess,
-      hash: solutionCommitment.toString(),
+      commitment: solutionCommitment.toString(),
     };
     console.log("Args:", args);
     let proof;

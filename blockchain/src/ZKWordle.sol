@@ -17,7 +17,7 @@ interface IStatsVerifier {
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
-        uint256[61] memory input
+        uint256[31] memory input
     ) external view returns (bool);
 }
 
@@ -73,7 +73,7 @@ contract ZKWordle is Ownable {
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
-        uint256[61] memory input
+        uint256[31] memory input
     ) public view returns (bool) {
         return statsVerifier.verifyProof(a, b, c, input);
     }

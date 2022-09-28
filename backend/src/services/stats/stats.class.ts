@@ -48,7 +48,7 @@ export class Stats extends Service {
       solution: asciiSolution,
       salt: salt,
       guesses: guesses,
-      hash: solutionCommitment.toString(),
+      commitment: solutionCommitment.toString(),
     };
     console.log("Args:", args);
     const proof = await groth16.fullProve(

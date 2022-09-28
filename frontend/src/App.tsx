@@ -184,8 +184,8 @@ function App() {
   const contract = useContract({
     addressOrName:
       process.env.NODE_ENV === 'production'
-        ? '0xb44d12c7c2a4af26703fc39cb10b9fc0785e5de6'
-        : '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0',
+        ? '0xD2936b30A608F63C925bF19f3da44EC8fA4C6170'
+        : '0x0165878a594ca255338adfa4d48449f69242eb8f',
     contractInterface: contractAbi.abi,
     signerOrProvider: signer,
   })
@@ -394,6 +394,7 @@ function App() {
       ]
       const c = [argv[6], argv[7]]
       const Input = argv.slice(8)
+
       contract.verifyClues(a, b, c, Input).then((verificationResult: any) => {
         guessesProven.set(currentGuess, verificationResult)
         setGuessProven(new Map(guessesProven))

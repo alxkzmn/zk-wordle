@@ -5,11 +5,11 @@ template CheckGuess() {
    signal input solution[5];
    signal input salt;
    signal input guess[5];
-   signal input hash;
+   signal input commitment;
    signal output clue[5];
    component check = SingleGuessCheck();
    check.salt <== salt;
-   check.hash <== hash;
+   check.commitment <== commitment;
    for (var i = 0; i < 5; i++) {
       check.solution[i] <== solution[i];
       check.guess[i] <== guess[i];
@@ -20,12 +20,4 @@ template CheckGuess() {
    }
 }
 
-component main{public [guess, hash]} = CheckGuess();
-
-//For ZK-REPL (https://zkrepl.dev/)
-/* INPUT = {
-     "solution": [ 83, 84, 69, 69, 76 ],
-  "salt": 362986289847779600,
-  "guess": [ 83, 84, 65, 82, 84 ],
-  "hash": "15057754752634756475908235894514270422456734783907164695964318985994495471810"
-} */
+component main{public [guess, commitment]} = CheckGuess();

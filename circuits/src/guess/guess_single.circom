@@ -9,8 +9,8 @@ template SingleGuessCheck() {
    signal input salt;
    //Current guess (public input)
    signal input guess[5];
-   //Solution hash
-   signal input hash;
+   //Solution commitment
+   signal input commitment;
    //Clue output (typically represented using colored squares ⬜🟩⬜🟨🟨)
    //"0" - the letter is absent (gray), "1" - the letter matches correctly (green)
    //"2" - the letter is present in solution but is located at a different position (yellow)
@@ -120,7 +120,7 @@ template SingleGuessCheck() {
    solutionHash.inputs[0] <== solutionAsNumber[4];
    solutionHash.inputs[1] <== salt;
    //Constrain the hash to a publicly committed one
-   hash === solutionHash.out;
+   commitment === solutionHash.out;
 }
 
 //Convenience component that inverts the "b" input 
@@ -144,5 +144,5 @@ template AndNotB(){
      "solution": [ 83, 84, 69, 69, 76 ],
   "salt": 362986289847779600,
   "guess": [ 83, 84, 65, 82, 84 ],
-  "hash": "15057754752634756475908235894514270422456734783907164695964318985994495471810"
+  "commitment": "15057754752634756475908235894514270422456734783907164695964318985994495471810"
 } */

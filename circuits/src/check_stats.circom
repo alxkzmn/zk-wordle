@@ -6,15 +6,15 @@ template CheckWordleStats() {
    //"Word of the day", private input
    signal input solution[5];
    signal input salt;
-   //Solution hash
-   signal input hash;
+   //Solution commitment
+   signal input commitment;
    signal output clues[6][5];
 
    component checkGuess[6];
    for (var i = 0; i < 6; i++) {
       checkGuess[i] = SingleGuessCheck();
       checkGuess[i].salt <== salt;
-      checkGuess[i].hash <== hash;
+      checkGuess[i].commitment <== commitment;
       for (var j = 0; j < 5; j++) {
          checkGuess[i].solution[j] <== solution[j];
          checkGuess[i].guess[j] <== guesses[i][j];
@@ -26,4 +26,4 @@ template CheckWordleStats() {
    }
 }
 
-component main{public [guesses, hash]} = CheckWordleStats();
+component main{public [commitment]} = CheckWordleStats();
