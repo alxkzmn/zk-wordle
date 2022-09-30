@@ -51,11 +51,13 @@ export class Stats extends Service {
       commitment: solutionCommitment.toString(),
     };
     console.log("Args:", args);
+    const start = performance.now();
     const proof = await groth16.fullProve(
       args,
       CIRCUIT_WASM_PATH,
       CIRCUIT_ZKEY_PATH
     );
+    console.log(`Proof took ${(performance.now() - start).toFixed(3)}ms`);
     console.log("Stats proof generated");
     console.log(proof);
 

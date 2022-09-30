@@ -185,7 +185,7 @@ function App() {
     addressOrName:
       process.env.NODE_ENV === 'production'
         ? '0xD2936b30A608F63C925bF19f3da44EC8fA4C6170'
-        : '0x0165878a594ca255338adfa4d48449f69242eb8f',
+        : '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0',
     contractInterface: contractAbi.abi,
     signerOrProvider: signer,
   })
@@ -203,7 +203,7 @@ function App() {
         setSolutionIndex(solutionIndex)
         setTomorrow(tomorrow)
       })
-  })
+  }, [feathersClient])
   useEffect(() => {
     if (isConnected && !creatingCommitment && solutionIndex !== 0) {
       setIsCreatingCommitment(true)
@@ -478,7 +478,11 @@ function App() {
 
     setStatsVerificationStatus('proving')
     try {
+      const start = performance.now()
       let result = await contract.verifyStats(a, b, c, Input)
+      console.log(
+        `Verification took ${(performance.now() - start).toFixed(3)}ms`
+      )
       setIsStatsValid(result)
       setStatsVerificationStatus('proven')
     } catch (e) {
