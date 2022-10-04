@@ -270,9 +270,8 @@ function App() {
       clueVerificationParams?.Input,
     ],
     onSuccess(verificationResult: any) {
-      guessesProven.set(currentGuess, verificationResult)
+      guessesProven.set(guesses[guesses.length - 1], verificationResult)
       setGuessProven(new Map(guessesProven))
-      setCurrentGuess('')
     },
     onError(err) {
       if (clueVerificationParams) console.log(err)
@@ -485,6 +484,7 @@ function App() {
       const Input = argv.slice(8)
 
       setClueVerificationParams({ a: a, b: b, c: c, Input: Input })
+      setCurrentGuess('')
     } catch (e) {
       console.log(e)
     }
