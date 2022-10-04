@@ -15,7 +15,6 @@ import LoadingSpinner from '../progress/Spinner'
 import { useState } from 'react'
 import { MAX_CHALLENGES } from '../../constants/settings'
 import { asAsciiArray } from '../../lib/asAsciiArray'
-import { Groth16Proof } from '../../zk/prove'
 import { Application } from '@feathersjs/feathers'
 
 type Props = {
@@ -96,19 +95,26 @@ export const StatsModal = ({
               className="mt-2 w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
               onClick={() => {
                 setIsProving(true)
-
-                while (guesses.length < MAX_CHALLENGES) {
-                  //Adding empty guesses after the last one to satisfy the 6x5 dimensions of the proof input
-                  guesses.push('     ')
+                let augmentedGuesses = []
+                for (let i = 0; i < MAX_CHALLENGES; i++) {
+                  if (i < guesses.length) {
+                    augmentedGuesses.push(guesses[i])
+                  } else {
+                    //Adding empty guesses after the last one to satisfy the 6x5 dimensions of the proof input
+                    augmentedGuesses.push('     ')
+                  }
                 }
-                let asciiGuesses = guesses.map((guess) => asAsciiArray(guess))
+                let asciiGuesses = augmentedGuesses.map((guess) =>
+                  asAsciiArray(guess)
+                )
                 try {
                   feathersClient
                     .service('stats')
                     .create({
                       guesses: asciiGuesses,
                     })
-                    .then((result: Groth16Proof) => {
+                    .then((result: any) => {
+                      delete result?.id
                       console.log(result)
                       setIsProving(false)
                       shareStatus(

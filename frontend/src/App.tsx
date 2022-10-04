@@ -4,7 +4,13 @@ import { Keyboard } from './components/keyboard/Keyboard'
 import { InfoModal } from './components/modals/InfoModal'
 import { StatsModal } from './components/modals/StatsModal'
 import { SettingsModal } from './components/modals/SettingsModal'
-import { useContract, useSigner, useSwitchNetwork } from 'wagmi'
+import {
+  useContractRead,
+  useContractWrite,
+  usePrepareContractWrite,
+  useSigner,
+  useSwitchNetwork,
+} from 'wagmi'
 import { groth16 } from 'snarkjs'
 import contractAbi from './contracts/ZKWordle.sol/ZKWordle.json'
 
@@ -76,6 +82,8 @@ function App() {
 
   feathersClient.configure(restClient.axios(axios))
 
+  const PRODUCTION = process.env.NODE_ENV === 'production'
+  const REQUIRED_CHAIN_ID = PRODUCTION ? 5 : 31337
   const prefersDarkMode = window.matchMedia(
     '(prefers-color-scheme: dark)'
   ).matches
@@ -88,6 +96,9 @@ function App() {
   const [isConnected, setIsConnected] = useState(false)
   const [isGameWon, setIsGameWon] = useState(false)
   const [creatingCommitment, setIsCreatingCommitment] = useState(false)
+  const [commitmentParams, setCommitmentParams] = useState<any>()
+  const [clueVerificationParams, setClueVerificationParams] = useState<any>()
+  const [statsVerificationParams, setStatsVerificationParams] = useState<any>()
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
@@ -156,8 +167,7 @@ function App() {
   const { data: signer } = useSigner()
   const { switchNetwork } = useSwitchNetwork({
     onSuccess(data) {
-      if (data.id === (process.env.NODE_ENV === 'production' ? 5 : 31337))
-        setIsOnCorrectNetwork(true)
+      if (data.id === REQUIRED_CHAIN_ID) setIsOnCorrectNetwork(true)
     },
   })
 
@@ -165,85 +175,164 @@ function App() {
     if (!isOnCorrectNetwork) {
       signer?.getChainId().then((chainId) => {
         //If the wallet is not connected to Goerli testnet
-        if (chainId !== (process.env.NODE_ENV === 'production' ? 5 : 31337)) {
+        if (chainId !== REQUIRED_CHAIN_ID) {
           //Ask user to switch to Goerli testnet
-          switchNetwork?.(process.env.NODE_ENV === 'production' ? 5 : 31337)
+          switchNetwork?.(REQUIRED_CHAIN_ID)
         } else {
           setIsOnCorrectNetwork(true)
         }
       })
     }
-  }, [isOnCorrectNetwork, signer, switchNetwork])
+  }, [REQUIRED_CHAIN_ID, isOnCorrectNetwork, signer, switchNetwork])
 
   useEffect(() => {
     if (signer && isOnCorrectNetwork) {
       setIsConnected(true)
     }
   }, [isOnCorrectNetwork, signer])
-  //TODO make compatible with local deployment
-  const contract = useContract({
-    addressOrName:
-      process.env.NODE_ENV === 'production'
-        ? '0xD2936b30A608F63C925bF19f3da44EC8fA4C6170'
-        : '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0',
+  const CONTRACT_ADDRESS = PRODUCTION
+    ? '0xD2936b30A608F63C925bF19f3da44EC8fA4C6170'
+    : '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
+  const readyToCommit = isConnected && solutionIndex !== 0
+
+  const writeCommitmentConfig = usePrepareContractWrite({
+    addressOrName: CONTRACT_ADDRESS,
     contractInterface: contractAbi.abi,
-    signerOrProvider: signer,
+    functionName: 'commitSolution',
+    enabled: commitmentParams && !creatingCommitment,
+    args: [
+      commitmentParams?.solutionIndex,
+      commitmentParams?.hashedSolution,
+      commitmentParams?.signature,
+    ],
+  })
+  const writeCommitment = useContractWrite({
+    ...writeCommitmentConfig.config,
+    onError(error) {
+      if (error.message.indexOf('user rejected transaction') >= 0) {
+        return showErrorAlert(
+          'Commitment not created, cannot verify proofs',
+          {}
+        )
+      }
+      setIsCreatingCommitment(false)
+    },
+    onSuccess() {
+      console.log('Commitment successfully created')
+    },
+  })
+
+  useContractRead({
+    addressOrName: CONTRACT_ADDRESS,
+    contractInterface: contractAbi.abi,
+    functionName: 'solutionCommitment',
+    chainId: REQUIRED_CHAIN_ID,
+    enabled: readyToCommit && !commitmentParams,
+    args: solutionIndex,
+    onSuccess(commitment) {
+      console.log(`Getting commitment`)
+      if (commitment.isZero()) {
+        console.log(`Commitment for solution #${solutionIndex} not found`)
+        feathersClient
+          .service('commitment')
+          .create({})
+          .then(
+            ({
+              solutionIndex,
+              hashedSolution,
+              signature,
+            }: CommitmentResponse) => {
+              console.log('Set commitment params')
+              setCommitmentParams({
+                solutionIndex: solutionIndex,
+                hashedSolution: hashedSolution,
+                signature: signature,
+              })
+            }
+          )
+      } else {
+        console.log(`Commitment found: ${commitment}, proceeding`)
+        setIsCreatingCommitment(true)
+      }
+    },
+  })
+
+  useContractRead({
+    addressOrName: CONTRACT_ADDRESS,
+    contractInterface: contractAbi.abi,
+    functionName: 'verifyClues',
+    chainId: REQUIRED_CHAIN_ID,
+    enabled: clueVerificationParams,
+    args: [
+      clueVerificationParams?.a,
+      clueVerificationParams?.b,
+      clueVerificationParams?.c,
+      clueVerificationParams?.Input,
+    ],
+    onSuccess(verificationResult: any) {
+      guessesProven.set(currentGuess, verificationResult)
+      setGuessProven(new Map(guessesProven))
+      setCurrentGuess('')
+    },
+    onError(err) {
+      if (clueVerificationParams) console.log(err)
+    },
+  })
+
+  useContractRead({
+    addressOrName: CONTRACT_ADDRESS,
+    contractInterface: contractAbi.abi,
+    functionName: 'verifyStats',
+    chainId: REQUIRED_CHAIN_ID,
+    enabled: statsVerificationParams,
+    args: [
+      statsVerificationParams?.a,
+      statsVerificationParams?.b,
+      statsVerificationParams?.c,
+      statsVerificationParams?.Input,
+    ],
+    onSuccess(verificationResult: any) {
+      //TODO measure stats verification time
+      // const start = !PRODUCTION ? performance.now() : undefined
+      // if (!PRODUCTION) {
+      //   console.log(
+      //     `Verification took ${(performance.now() - (start ?? 0)).toFixed(3)}ms`
+      //   )
+      // }
+      setIsStatsValid(verificationResult)
+      setStatsVerificationStatus('proven')
+    },
+    onError(err) {
+      if (statsVerificationParams) {
+        console.log(err)
+        setIsStatsValid(false)
+        setStatsVerificationStatus('missing')
+      }
+    },
   })
 
   useEffect(() => {
-    feathersClient
-      .service('game-round')
-      .find()
-      .then(({ solutionIndex, tomorrow }: GameRoundResponse) => {
-        const loaded = loadGameStateFromLocalStorage()
-        if (solutionIndex !== loaded?.solutionIndex) {
-          setGuesses([])
-          setStatuses(new Map())
-        }
-        setSolutionIndex(solutionIndex)
-        setTomorrow(tomorrow)
-      })
-  }, [feathersClient])
-  useEffect(() => {
-    if (isConnected && !creatingCommitment && solutionIndex !== 0) {
+    if (writeCommitment?.write && !creatingCommitment) {
       setIsCreatingCommitment(true)
-      try {
-        console.log('Getting commitment...')
-        contract.solutionCommitment(solutionIndex).then((commitment: any) => {
-          if (commitment.isZero()) {
-            console.log(`Commitment for solution #${solutionIndex} not found`)
-            feathersClient
-              .service('commitment')
-              .create({})
-              .then(
-                ({
-                  solutionIndex,
-                  hashedSolution,
-                  signature,
-                }: CommitmentResponse) => {
-                  contract
-                    .commitSolution(solutionIndex, hashedSolution, signature)
-                    .then((tx: any) => {
-                      tx.wait().then((commitment: any) => {
-                        if (commitment.status) {
-                          console.log('Commitment successfully created')
-                        } else {
-                          setIsCreatingCommitment(false)
-                        }
-                      })
-                    })
-                }
-              )
-          } else {
-            console.log(`Commitment found: ${commitment}, proceeding`)
-          }
-        })
-      } catch (e) {
-        setIsCreatingCommitment(false)
-        console.log(e)
-      }
+      writeCommitment?.write?.()
     }
-  }, [contract, creatingCommitment, feathersClient, isConnected, solutionIndex])
+  }, [creatingCommitment, writeCommitment])
+
+  useEffect(() => {
+    if (solutionIndex === 0)
+      feathersClient
+        .service('game-round')
+        .find()
+        .then(({ solutionIndex, tomorrow }: GameRoundResponse) => {
+          const loaded = loadGameStateFromLocalStorage()
+          if (solutionIndex !== loaded?.solutionIndex) {
+            setGuesses([])
+            setStatuses(new Map())
+          }
+          setSolutionIndex(solutionIndex)
+          setTomorrow(tomorrow)
+        })
+  }, [feathersClient, solutionIndex])
 
   useEffect(() => {
     // if no game state on load,
@@ -395,10 +484,7 @@ function App() {
       const c = [argv[6], argv[7]]
       const Input = argv.slice(8)
 
-      contract.verifyClues(a, b, c, Input).then((verificationResult: any) => {
-        guessesProven.set(currentGuess, verificationResult)
-        setGuessProven(new Map(guessesProven))
-      })
+      setClueVerificationParams({ a: a, b: b, c: c, Input: Input })
     } catch (e) {
       console.log(e)
     }
@@ -428,8 +514,6 @@ function App() {
       guesses.length < MAX_CHALLENGES &&
       !isGameWon
     ) {
-      setCurrentGuess('')
-
       if (winningWord) {
         setStats(addStatsForCompletedGame(stats, guesses.length))
         return setIsGameWon(true)
@@ -475,21 +559,8 @@ function App() {
     ]
     const c = [argv[6], argv[7]]
     const Input = argv.slice(8)
-
     setStatsVerificationStatus('proving')
-    try {
-      const start = performance.now()
-      let result = await contract.verifyStats(a, b, c, Input)
-      console.log(
-        `Verification took ${(performance.now() - start).toFixed(3)}ms`
-      )
-      setIsStatsValid(result)
-      setStatsVerificationStatus('proven')
-    } catch (e) {
-      console.log(e)
-      setIsStatsValid(false)
-      setStatsVerificationStatus('missing')
-    }
+    setStatsVerificationParams({ a: a, b: b, c: c, Input: Input })
   }
 
   return (

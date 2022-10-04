@@ -60,10 +60,10 @@ export const generateEmojiGrid = (
   return guesses
     .map((guess) => {
       const splitGuess = unicodeSplit(guess)
-      const status = statuses.get(guess)?.toString() ?? 'absent'
+      const status = statuses.get(guess) ?? ''
       return splitGuess
         .map((_, i) => {
-          switch (status) {
+          switch (status[i]) {
             case 'correct':
               return tiles[0]
             case 'present':
