@@ -7,7 +7,7 @@ template SingleGuessCheck() {
    //"Word of the day", private input
    signal input solution[5];
    signal input salt;
-   //Current guess (public input)
+   //Current guess
    signal input guess[5];
    //Solution commitment
    signal input commitment;

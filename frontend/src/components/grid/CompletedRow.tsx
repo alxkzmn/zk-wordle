@@ -19,17 +19,25 @@ export const CompletedRow = ({
 }: Props) => {
   const splitGuess = unicodeSplit(guess)
   return (
-    <div className="flex justify-center mb-1">
-      {splitGuess.map((letter, i) => (
-        <Cell
-          key={i}
-          value={letter}
-          status={status[i]}
-          position={i}
-          isRevealing={isRevealing}
-          isCompleted
-        />
-      ))}
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+      }}
+    >
+      <div />
+      <div className="flex justify-center mb-1">
+        {splitGuess.map((letter, i) => (
+          <Cell
+            key={i}
+            value={letter}
+            status={status[i]}
+            position={i}
+            isRevealing={isRevealing}
+            isCompleted
+          />
+        ))}
+      </div>
       {guessProven && (
         <div title={GUESS_WAS_VERIFIED} className="p-2">
           <ShieldCheckIcon className="h-6 w-6 cursor-pointer dark:stroke-white" />
