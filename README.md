@@ -1,6 +1,6 @@
 # ZK-Wordle
 
-Wordle game implemented using the Zero-Knowledge Proofs.
+Wordle game implemented using the Zero-Knowledge Proofs. This project is my first exploration of zero-knowledge proofs. Check out [this series of articles](https://alexkuzmin.io/posts/zk-wordle-1/) to learn the story behind it.
 
 ## Compile the circuit, generate the reference zKey and verifier smart contract
 
@@ -18,6 +18,7 @@ Start the local chain:
 cd blockchain
 anvil
 ```
+Rename `blockchain/.env.example` to `blockchain/.env` and paste the private key of an Ethereum account you intend to use as a deployer.
 
 Deploy the contract in another terminal:
 
@@ -33,6 +34,8 @@ forge script script/ZKWordle.s.sol --ffi --rpc-url <YOUR RPC URL (e.g., Infura)>
 
 ## Run the backend
 
+1. Rename `backend/.env.example` to `backend/.env` and paste the private key of an Ethereum account you intend to use as a signer in the backend.
+2. Run
 ```bash
 cd backend
 npm install

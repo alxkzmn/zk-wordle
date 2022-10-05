@@ -79,6 +79,7 @@ svg.cursor-pointer:hover {
 
 .right-icons {
   display: flex;
+  align-items: center;
 }
 
 @keyframes revealAbsentCharCell {

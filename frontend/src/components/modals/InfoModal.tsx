@@ -58,14 +58,22 @@ export const InfoModal = ({ isOpen, handleClose }: Props) => {
       </p>
 
       <p className="mt-6 italic text-sm text-gray-500 dark:text-gray-300">
-        This is an open source version of the word guessing game we all know and
-        love -{' '}
+        This is an Zero-Knowledge-Proof-enabled version of the word guessing
+        game we all know and love -{' '}
         <a
-          href="https://github.com/cwackerfuss/react-wordle"
+          href="https://github.com/alxkzmn/zk-wordle"
           className="underline font-bold"
         >
           check out the code here
-        </a>{' '}
+        </a>
+        . To learn more about the ZK-Wordle implementation, check out{' '}
+        <a
+          href="https://alexkuzmin.io/posts/zk-wordle-1/"
+          className="underline font-bold"
+        >
+          this series of articles
+        </a>
+        .
       </p>
     </BaseModal>
   )

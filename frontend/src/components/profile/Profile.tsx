@@ -17,7 +17,7 @@ export function Profile() {
 
   if (isConnected) {
     return (
-      <div className="dark:text-white">
+      <div className="ml-3 dark:text-white">
         {ensName && <img src={ensAvatar ?? ''} alt="" />}
         <div>
           {ensName
