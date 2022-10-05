@@ -4,10 +4,11 @@ import { Application } from "./declarations";
 export default function (app: Application): void {
   const connectionString = app.get("postgres");
   console.log("Connection string:", connectionString);
+  const PRODUCTION = process.env.NODE_ENV === "production";
   const sequelize = new Sequelize(connectionString, {
     dialect: "postgres",
     dialectOptions: {
-      ssl: process.env.NODE_ENV === "production" && {
+      ssl: PRODUCTION && {
         require: true,
         rejectUnauthorized: false,
       },
@@ -16,7 +17,7 @@ export default function (app: Application): void {
     define: {
       freezeTableName: true,
     },
-    ssl: process.env.NODE_ENV === "production",
+    ssl: PRODUCTION,
   });
   const oldSetup = app.setup;
 
