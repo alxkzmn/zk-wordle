@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/zk-wordle/static/css/main.b6a47bc1.css",
-    "main.js": "/zk-wordle/static/js/main.80be5602.js",
+    "main.js": "/zk-wordle/static/js/main.09ed2e1f.js",
     "static/js/654.e35e8f7c.chunk.js": "/zk-wordle/static/js/654.e35e8f7c.chunk.js",
     "static/js/563.0334855a.chunk.js": "/zk-wordle/static/js/563.0334855a.chunk.js",
     "static/js/787.1dcfd89e.chunk.js": "/zk-wordle/static/js/787.1dcfd89e.chunk.js",
@@ -9,13 +9,13 @@
     "static/js/163.12e48b39.chunk.js": "/zk-wordle/static/js/163.12e48b39.chunk.js",
     "index.html": "/zk-wordle/index.html",
     "main.b6a47bc1.css.map": "/zk-wordle/static/css/main.b6a47bc1.css.map",
-    "main.80be5602.js.map": "/zk-wordle/static/js/main.80be5602.js.map",
+    "main.09ed2e1f.js.map": "/zk-wordle/static/js/main.09ed2e1f.js.map",
     "787.1dcfd89e.chunk.js.map": "/zk-wordle/static/js/787.1dcfd89e.chunk.js.map",
     "419.5dca3a33.chunk.js.map": "/zk-wordle/static/js/419.5dca3a33.chunk.js.map",
     "163.12e48b39.chunk.js.map": "/zk-wordle/static/js/163.12e48b39.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.b6a47bc1.css",
-    "static/js/main.80be5602.js"
+    "static/js/main.09ed2e1f.js"
   ]
 }
