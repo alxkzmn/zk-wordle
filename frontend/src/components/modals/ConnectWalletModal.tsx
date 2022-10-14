@@ -1,4 +1,8 @@
 import { useConnect } from 'wagmi'
+import {
+  CONNECT_WALLET_MSG,
+  CONNECT_WALLET_TITLE,
+} from '../../constants/strings'
 import { BaseModal } from './BaseModal'
 
 type Props = {
@@ -12,14 +16,12 @@ export const ConnectWalletModal = ({ isOpen, handleClose }: Props) => {
 
   return (
     <BaseModal
-      title="Connect Wallet"
+      title={CONNECT_WALLET_TITLE}
       isOpen={isOpen}
       handleClose={handleClose}
       isCloseable={false}
     >
-      <div className="dark:text-white">
-        Please connect to blockchain to play ZK-Wordle
-      </div>
+      <div className="dark:text-white">{CONNECT_WALLET_MSG}</div>
       {connectors.map((connector) => (
         <button
           type="button"

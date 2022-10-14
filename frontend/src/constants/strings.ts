@@ -34,3 +34,6 @@ export const VERIFYING = 'Verifying...'
 export const STATS_VALID = 'Stats valid'
 export const STATS_INVALID = 'Stats invalid'
 export const STATS_WAS_VERIFIED = 'Verified with ZKP'
+export const CONNECT_WALLET_TITLE = 'Connect Wallet'
+export const CONNECT_WALLET_MSG =
+  'Please connect to Görli Ethereum testnet to play ZK-Wordle'
