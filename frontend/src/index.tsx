@@ -5,6 +5,8 @@ import App from './App'
 import reportWebVitals from './reportWebVitals'
 import { AlertProvider } from './context/AlertContext'
 import { configureChains, chain, createClient, WagmiConfig } from 'wagmi'
+import { alchemyProvider } from 'wagmi/providers/alchemy'
+import { infuraProvider } from 'wagmi/providers/infura'
 import { publicProvider } from 'wagmi/providers/public'
 
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet'
@@ -14,7 +16,11 @@ import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
 
 const { chains, provider, webSocketProvider } = configureChains(
   [process.env.NODE_ENV === 'production' ? chain.goerli : chain.localhost],
-  [publicProvider()]
+  [
+    alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_KEY, priority: 0 }),
+    infuraProvider({ apiKey: process.env.REACT_APP_INFURA_KEY, priority: 0 }),
+    publicProvider({ priority: 1 }),
+  ]
 )
 
 const client = createClient({
